@@ -52,6 +52,7 @@ const GIFTER_BOARD_GROUPS: GifterGroup[] = [
       [
         { name: "NabilRasyaaaa", rot: 1.6, offset: 5 },
         { name: "Salma Nada", rot: -1.1, offset: -3 },
+        { name: "R_Syaa (Aisyah_adl)", rot: 1.3, offset: 4 },
       ],
     ],
   },

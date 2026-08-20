@@ -128,10 +128,18 @@ export async function PUT(request: Request) {
     if (!id) return NextResponse.json({ status: false, message: "ID required" }, { status: 400 });
 
     if (isMySqlConfigured()) {
-      await query(
-        "UPDATE `tickets` SET `name`=COALESCE(?, `name`), `no_anggota`=COALESCE(?, `no_anggota`), `kategori`=COALESCE(?, `kategori`), `pesan`=COALESCE(?, `pesan`) WHERE `id`=?",
-        [name, no_anggota, kategori, pesan, id]
-      );
+      const sets: string[] = [];
+      const vals: any[] = [];
+      if (name !== undefined)       { sets.push("`name`=?");       vals.push(name); }
+      if (no_anggota !== undefined)  { sets.push("`no_anggota`=?"); vals.push(no_anggota); }
+      if (kategori !== undefined)    { sets.push("`kategori`=?");   vals.push(kategori); }
+      if (pesan !== undefined)       { sets.push("`pesan`=?");      vals.push(pesan); }
+      if (divisi !== undefined)      { sets.push("`divisi`=?");     vals.push(divisi); }
+      if (status !== undefined)      { sets.push("`status`=?");     vals.push(status); }
+      if (sets.length > 0) {
+        vals.push(id);
+        await query(`UPDATE \`tickets\` SET ${sets.join(", ")} WHERE \`id\`=?`, vals);
+      }
     }
 
     const data = readTicketsLocal();

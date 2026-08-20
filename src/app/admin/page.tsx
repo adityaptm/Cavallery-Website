@@ -4,15 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import styles from "./page.module.css";
 
-const API_BASE    = "https://v5.jkt48connect.com/api/cavallery";
-const API_KEY     = "JKTCONNECT";
-const api = (path: string) => `${API_BASE}${path}?apikey=${API_KEY}`;
+const api = (path: string) => (path.startsWith("/api") ? path : `/api${path}`);
+const merchApi = (path: string) => (path.startsWith("/api/merch") ? path : `/api/merch${path}`);
 
-const MERCH_API_BASE = "https://v5.jkt48connect.com/api/merch";
-const merchApi = (path: string) => `${MERCH_API_BASE}${path}`;
-
-const DISCORD_API   = "/api/discord";
-const JOURNAL_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiiUkBqWpRrYSDkC-6RKZ_mFxPAWB2uydW_hxaYWL0tr-o_GwrJ6b4zt_Goj9gFeen/exec";
+const DISCORD_API = "/api/discord";
 
 type Section =
   | "dashboard" | "news"     | "timeline" | "gallery"
@@ -1096,6 +1091,7 @@ interface DiscordLog {
   title: string;
   mention: string;
   hasImage: boolean;
+  url?: string;
 }
 
 function DiscordManager() {
@@ -1158,7 +1154,7 @@ function DiscordManager() {
 
       if (res.ok) {
         showToast("✅ Berhasil dikirim ke Discord!", "success");
-        const newLog: DiscordLog = { time, title: title.trim(), mention: mention || "—", hasImage: !!image.trim() };
+        const newLog: DiscordLog = { time, title: title.trim(), mention: mention || "—", hasImage: !!image.trim(), url: urlVal };
         saveLogs([newLog, ...logs].slice(0, 30));
         setTitle(""); setDesc(""); setImage(""); setMention("");
       } else {
@@ -1240,7 +1236,18 @@ function DiscordManager() {
                 {desc && <><br /><span style={{ opacity: 0.5, fontSize: 11 }}>🕐 {now()}</span></>}
               </div>
               {image && <img src={image} alt="embed" className={styles.discordEmbedImg} onError={e => (e.currentTarget.style.display = "none")} />}
-              {url && <div className={styles.discordEmbedUrl}><i className="bx bx-link-external" style={{ fontSize: 11 }} /> {url}</div>}
+              {url && (
+                <div className={styles.discordEmbedUrl}>
+                  <a
+                    href={url.startsWith("http") ? url : `https://${url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#5865f2", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: 4 }}
+                  >
+                    <i className="bx bx-link-external" style={{ fontSize: 12 }} /> {url}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1263,6 +1270,17 @@ function DiscordManager() {
                       <span>{log.time}</span>
                       {log.mention !== "—" && <span style={{ background: log.mention === "@everyone" ? "#3a1a1a" : "#2a1e10", color: log.mention === "@everyone" ? "#e05252" : "#f59e0b", padding: "1px 6px", borderRadius: 4, fontSize: 10 }}>{log.mention}</span>}
                       {log.hasImage && <span style={{ color: "#5865f2", fontSize: 10 }}><i className="bx bx-image" /> gambar</span>}
+                      {log.url && (
+                        <a
+                          href={log.url.startsWith("http") ? log.url : `https://${log.url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#3b82f6", fontSize: 10, display: "inline-flex", alignItems: "center", gap: 2, textDecoration: "underline" }}
+                          title={log.url}
+                        >
+                          <i className="bx bx-link-external" /> {log.url.replace(/^https?:\/\//, "").slice(0, 25)}{log.url.replace(/^https?:\/\//, "").length > 25 ? "…" : ""}
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1298,7 +1316,7 @@ const DEFAULT_JOURNAL_MESSAGES: JournalMessage[] = [
 ];
 
 function JournalManager() {
-  const [messages, setMessages] = useState<JournalMessage[]>(DEFAULT_JOURNAL_MESSAGES);
+  const [messages, setMessages] = useState<JournalMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -1316,45 +1334,28 @@ function JournalManager() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    let loadedMessages: JournalMessage[] | null = null;
     try {
-      const res = await fetch("/api/journal");
+      const res = await fetch("/api/journal", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        const arr = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
-        if (arr && arr.length > 0) {
-          loadedMessages = arr.map((item: any, idx: number) => ({
-            id: item.id || (idx + 1),
-            name: item.name || "Anonim",
-            msg: item.msg || item.pesan || "",
-            date: item.date ? new Date(item.date).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-",
-            rawDate: item.date || ""
-          }));
-        }
+        const arr = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        const loaded = arr.map((item: any, idx: number) => ({
+          id: item.id || (idx + 1),
+          name: item.name || "Anonim",
+          msg: item.msg || item.pesan || "",
+          date: item.date ? new Date(item.date).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-",
+          rawDate: item.date || ""
+        }));
+        setMessages(loaded);
+      } else {
+        setMessages([]);
       }
-    } catch {}
-
-    if (!loadedMessages || loadedMessages.length === 0) {
-      try {
-        const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_journal") : null;
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            loadedMessages = parsed;
-          }
-        }
-      } catch {}
+    } catch {
+      setMessages([]);
     }
-
-    if (!loadedMessages || loadedMessages.length === 0) {
-      loadedMessages = DEFAULT_JOURNAL_MESSAGES;
-    }
-
-    setMessages([...loadedMessages].reverse());
+    // Clean up any stale localStorage cache
     if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_journal", JSON.stringify(loadedMessages));
-      } catch {}
+      try { localStorage.removeItem("cavallery_journal"); } catch {}
     }
     setLoading(false);
   }, []);
@@ -1366,34 +1367,25 @@ function JournalManager() {
     if (!newSender.trim() || !newMessage.trim()) { showToast("Nama dan pesan wajib diisi", "error"); return; }
     setSaving(true);
 
-    const newEntry: JournalMessage = {
-      id: Date.now(),
-      name: newSender.trim(),
-      msg: newMessage.trim(),
-      date: new Date().toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
-      rawDate: new Date().toISOString()
-    };
-
-    const updated = [newEntry, ...messages];
-    setMessages(updated);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_journal", JSON.stringify([...updated].reverse()));
-      } catch {}
-    }
-
     try {
-      await fetch("/api/journal", {
+      const res = await fetch("/api/journal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newSender.trim(), msg: newMessage.trim() })
       });
-    } catch {}
-
-    showToast("Pesan berhasil disematkan!", "success");
-    setNewSender("");
-    setNewMessage("");
-    setShowAddModal(false);
+      const json = await res.json();
+      if (json.status) {
+        showToast("Pesan berhasil disematkan!", "success");
+        setNewSender("");
+        setNewMessage("");
+        setShowAddModal(false);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menambahkan pesan", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
     setSaving(false);
   };
 
@@ -1403,44 +1395,42 @@ function JournalManager() {
     if (!editSender.trim() || !editMessageText.trim()) { showToast("Nama dan pesan wajib diisi", "error"); return; }
     setSaving(true);
 
-    const updated = messages.map(m => m.id === selectedMessage.id ? { ...m, name: editSender.trim(), msg: editMessageText.trim() } : m);
-    setMessages(updated);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_journal", JSON.stringify([...updated].reverse()));
-      } catch {}
-    }
-
     try {
-      await fetch("/api/journal", {
+      const res = await fetch("/api/journal", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: selectedMessage.id, name: editSender.trim(), msg: editMessageText.trim() })
       });
-    } catch {}
-
-    showToast("Pesan berhasil diperbarui!", "success");
-    setShowEditModal(false);
-    setSelectedMessage(null);
+      const json = await res.json();
+      if (json.status) {
+        showToast("Pesan berhasil diperbarui!", "success");
+        setShowEditModal(false);
+        setSelectedMessage(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal memperbarui pesan", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
     setSaving(false);
   };
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
-    const updated = messages.filter(m => m.id !== confirmDelete.id);
-    setMessages(updated);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_journal", JSON.stringify([...updated].reverse()));
-      } catch {}
-    }
-
     try {
-      await fetch(`/api/journal?id=${confirmDelete.id}`, { method: "DELETE" });
-    } catch {}
-
-    showToast("Pesan berhasil dihapus!", "success");
-    setConfirmDelete(null);
+      const res = await fetch(`/api/journal?id=${confirmDelete.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.status) {
+        showToast("Pesan berhasil dihapus!", "success");
+        setConfirmDelete(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menghapus pesan", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
   };
 
   const openEdit = (msg: JournalMessage) => { setSelectedMessage(msg); setEditSender(msg.name); setEditMessageText(msg.msg); setShowEditModal(true); };
@@ -1596,35 +1586,17 @@ function BotManager() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    let loadedConfig: BotConfig | null = null;
     try {
-      const res = await fetch("/api/bot-config");
+      const res = await fetch("/api/bot-config", { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         if (json.status && json.data) {
-          loadedConfig = json.data;
+          setConfig(json.data);
         }
       }
     } catch {}
-
-    if (!loadedConfig) {
-      try {
-        const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_bot_config") : null;
-        if (saved) {
-          loadedConfig = JSON.parse(saved);
-        }
-      } catch {}
-    }
-
-    if (!loadedConfig) {
-      loadedConfig = DEFAULT_BOT_CONFIG;
-    }
-
-    setConfig(loadedConfig);
     if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_bot_config", JSON.stringify(loadedConfig));
-      } catch {}
+      try { localStorage.removeItem("cavallery_bot_config"); } catch {}
     }
     setLoading(false);
   }, []);
@@ -1635,20 +1607,22 @@ function BotManager() {
     e.preventDefault();
     if (!config) return;
     setSaving(true);
-    const newConfig = { ...config };
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_bot_config", JSON.stringify(newConfig));
-      } catch {}
-    }
     try {
-      await fetch("/api/bot-config", {
+      const res = await fetch("/api/bot-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ apiKey: config.apiKey, fallbackResponse: config.fallbackResponse })
       });
-    } catch {}
-    showToast("Konfigurasi umum berhasil disimpan!", "success");
+      const json = await res.json();
+      if (json.status) {
+        showToast("Konfigurasi umum berhasil disimpan!", "success");
+        await load();
+      } else {
+        showToast(json.message || "Gagal menyimpan", "error");
+      }
+    } catch {
+      showToast("Gagal menyimpan", "error");
+    }
     setSaving(false);
   };
 
@@ -1671,47 +1645,45 @@ function BotManager() {
       if (idx !== -1) updatedRules[idx] = { id: selectedRuleId!, triggers: triggers2D, response: ruleResponse.trim() };
     }
 
-    const newConfig = { ...config, rules: updatedRules };
-    setConfig(newConfig);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_bot_config", JSON.stringify(newConfig));
-      } catch {}
-    }
-
     try {
-      await fetch("/api/bot-config", {
+      const res = await fetch("/api/bot-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ apiKey: config.apiKey, fallbackResponse: config.fallbackResponse, rules: updatedRules })
       });
-    } catch {}
-
-    showToast("Aturan pesan berhasil disimpan!", "success");
-    setShowRuleModal(null);
+      const json = await res.json();
+      if (json.status) {
+        showToast("Aturan pesan berhasil disimpan!", "success");
+        setShowRuleModal(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menyimpan", "error");
+      }
+    } catch {
+      showToast("Gagal menyimpan", "error");
+    }
     setSaving(false);
   };
 
   const handleDeleteRule = async (ruleId: string) => {
     if (!config || !confirm("Hapus aturan pesan ini?")) return;
     const updatedRules = (config.rules || []).filter(r => r.id !== ruleId);
-    const newConfig = { ...config, rules: updatedRules };
-    setConfig(newConfig);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cavallery_bot_config", JSON.stringify(newConfig));
-      } catch {}
-    }
-
     try {
-      await fetch("/api/bot-config", {
+      const res = await fetch("/api/bot-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ apiKey: config.apiKey, fallbackResponse: config.fallbackResponse, rules: updatedRules })
       });
-    } catch {}
-
-    showToast("Aturan pesan berhasil dihapus", "success");
+      const json = await res.json();
+      if (json.status) {
+        showToast("Aturan pesan dihapus", "success");
+        await load();
+      } else {
+        showToast(json.message || "Gagal menghapus", "error");
+      }
+    } catch {
+      showToast("Gagal menghapus", "error");
+    }
   };
 
   const filteredRules = config?.rules.filter(r => r.response.toLowerCase().includes(search.toLowerCase()) || r.triggers.some(g => g.some(t => t.toLowerCase().includes(search.toLowerCase())))) || [];
@@ -2895,7 +2867,7 @@ function SectionManager({ section }: { section: Section }) {
   );
 }
 
-const TICKET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62qxU5a7zGuNSpOHfVwX6mPb3DWNo94GvLSMNsitkx-YJJIQG_5QcDhhrfaXHHeMGnA/exec";
+
 
 // ─── TICKETS MANAGER ──────────────────────────────────────────
 function TicketsManager() {
@@ -2910,29 +2882,12 @@ function TicketsManager() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(TICKET_SCRIPT_URL);
-      const rawData = await res.json();
-      const formatted = Array.isArray(rawData)
-        ? rawData
-            .map((row: any, index: number) => {
-              if (index === 0 && (row[1] === "Nama" || typeof row[0] === "string")) return null;
-              return {
-                id: parseInt(row[0]) || index + 1,
-                date: row[5] || new Date().toISOString(),
-                name: row[1] || "Anonymous",
-                no_anggota: row[2] || "-",
-                kategori: row[3] || "Lainnya",
-                pesan: row[4] || "",
-                divisi: row[6] || "-",
-                status: row[7] || "Pending",
-              };
-            })
-            .filter(Boolean)
-        : [];
-
-      setTickets(
-        formatted
-          .map((item: any) => ({
+      const res = await fetch("/api/tickets", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        setTickets(
+          arr.map((item: any) => ({
             ...item,
             formattedDate: item.date
               ? new Date(item.date).toLocaleString("id-ID", {
@@ -2944,8 +2899,10 @@ function TicketsManager() {
                 })
               : "-",
           }))
-          .reverse()
-      );
+        );
+      } else {
+        setTickets([]);
+      }
     } catch {
       showToast("Gagal memuat data tiket", "error");
       setTickets([]);
@@ -2960,50 +2917,36 @@ function TicketsManager() {
   const handleDelete = async () => {
     if (!confirmDelete) return;
     try {
-      const params = new URLSearchParams();
-      params.append("action", "delete");
-      params.append("id", confirmDelete.id.toString());
-
-      await fetch(TICKET_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body: params,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-
-      showToast("Tiket berhasil dihapus!", "success");
-      setConfirmDelete(null);
-      setTickets(prev => prev.filter(t => t.id !== confirmDelete.id));
+      const res = await fetch(`/api/tickets?id=${confirmDelete.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.status) {
+        showToast("Tiket berhasil dihapus!", "success");
+        setConfirmDelete(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menghapus tiket", "error");
+      }
     } catch {
       showToast("Gagal menghapus tiket", "error");
     }
   };
 
   const handleUpdate = async (id: number, field: "divisi" | "status", value: string) => {
-    setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, [field]: value } : t)));
     try {
-      const current = tickets.find((t) => t.id === id);
-      const params = new URLSearchParams();
-      params.append("action", "update");
-      params.append("id", id.toString());
-      if (field === "divisi") params.append("divisi", value);
-      if (field === "status") params.append("status", value);
-      if (current) {
-        if (field !== "divisi") params.append("divisi", current.divisi);
-        if (field !== "status") params.append("status", current.status);
-      }
-
-      await fetch(TICKET_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body: params,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      const res = await fetch("/api/tickets", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, [field]: value }),
       });
-
-      showToast("Status tiket diperbarui!", "success");
+      const json = await res.json();
+      if (json.status) {
+        showToast("Status tiket diperbarui!", "success");
+        await load();
+      } else {
+        showToast(json.message || "Gagal update", "error");
+      }
     } catch {
       showToast("Gagal update", "error");
-      load();
     }
   };
 
@@ -3074,49 +3017,79 @@ function CalendarManager() {
 
   const showToast = (msg: string, type: "success" | "error") => setToast({ msg, type });
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_calendar") : null;
-      if (saved) setEvents(JSON.parse(saved));
-      else setEvents([]);
+      const res = await fetch("/api/calendar", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setEvents(json.data);
+        } else {
+          setEvents([]);
+        }
+      } else {
+        setEvents([]);
+      }
     } catch {
       setEvents([]);
+    }
+    // Remove stale local storage
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("cavallery_calendar"); } catch {}
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date) { showToast("Judul dan Tanggal wajib diisi", "error"); return; }
     setSaving(true);
     try {
-      const newEvents = isEdit
-        ? events.map(ev => ev.id === editId ? { ...ev, title, date, startTime, url, imageUrl } : ev)
-        : [...events, { id: Date.now().toString(), title, date, startTime, url, imageUrl }];
-      setEvents(newEvents);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cavallery_calendar", JSON.stringify(newEvents));
+      const payload = isEdit
+        ? { action: "update", id: editId, item: { title, date, startTime, url, imageUrl } }
+        : { action: "add", title, date, startTime, url, imageUrl };
+
+      const res = await fetch("/api/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast(isEdit ? "Jadwal diperbarui" : "Jadwal ditambahkan", "success");
+        setShowModal(false);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menyimpan jadwal", "error");
       }
-      showToast(isEdit ? "Jadwal diperbarui" : "Jadwal ditambahkan", "success");
-      setShowModal(false);
     } catch {
       showToast("Gagal menyimpan jadwal", "error");
     }
     setSaving(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirmDelete) return;
-    const newEvents = events.filter(ev => ev.id !== confirmDelete.id);
-    setEvents(newEvents);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cavallery_calendar", JSON.stringify(newEvents));
+    try {
+      const res = await fetch("/api/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id: confirmDelete.id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast("Jadwal dihapus", "success");
+        setConfirmDelete(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menghapus jadwal", "error");
+      }
+    } catch {
+      showToast("Gagal menghapus jadwal", "error");
     }
-    showToast("Jadwal dihapus", "success");
-    setConfirmDelete(null);
   };
 
   const openAdd = () => { setIsEdit(false); setEditId(""); setTitle(""); setDate(""); setStartTime("19:00"); setUrl(""); setImageUrl(""); setShowModal(true); };
@@ -3204,49 +3177,75 @@ function UpdatesManager() {
 
   const showToast = (msg: string, type: "success" | "error") => setToast({ msg, type });
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_updates") : null;
-      if (saved) setUpdates(JSON.parse(saved));
-      else setUpdates(DEFAULT_UPDATES);
+      const res = await fetch("/api/updates", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        const arr = json?.data ?? (Array.isArray(json) ? json : []);
+        setUpdates(arr);
+      } else {
+        setUpdates([]);
+      }
     } catch {
-      setUpdates(DEFAULT_UPDATES);
+      setUpdates([]);
+    }
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("cavallery_updates"); } catch {}
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return showToast("URL wajib diisi", "error");
     setSaving(true);
     try {
-      const newUpdates = editId
-        ? updates.map(u => u.id === editId ? { ...u, platform, url: url.trim() } : u)
-        : [...updates, { id: Date.now().toString(), platform, url: url.trim() }];
-      setUpdates(newUpdates);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cavallery_updates", JSON.stringify(newUpdates));
+      const action = editId ? "update" : "add";
+      const payload = editId
+        ? { action, id: editId, item: { platform, url: url.trim() } }
+        : { action, id: Date.now().toString(), platform, url: url.trim() };
+      const res = await fetch("/api/updates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast("Berhasil disimpan", "success");
+        setShowModal(false);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menyimpan", "error");
       }
-      showToast("Berhasil disimpan", "success");
-      setShowModal(false);
     } catch {
       showToast("Gagal menyimpan", "error");
     }
     setSaving(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirmDelete) return;
-    const newUpdates = updates.filter(u => u.id !== confirmDelete.id);
-    setUpdates(newUpdates);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cavallery_updates", JSON.stringify(newUpdates));
+    try {
+      const res = await fetch("/api/updates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id: confirmDelete.id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast("Berhasil dihapus", "success");
+        setConfirmDelete(null);
+        await load();
+      } else {
+        showToast(json.message || "Gagal menghapus", "error");
+      }
+    } catch {
+      showToast("Gagal menghapus", "error");
     }
-    showToast("Berhasil dihapus", "success");
-    setConfirmDelete(null);
   };
 
   const openAdd = () => { setEditId(null); setPlatform("twitter"); setUrl(""); setShowModal(true); };
@@ -3328,28 +3327,41 @@ function VcScheduleManager() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_vcschedule") : null;
-      if (saved) setData(JSON.parse(saved));
-      else setData(DEFAULT_VCSCHEDULE);
-    } catch {
-      setData(DEFAULT_VCSCHEDULE);
+      const res = await fetch("/api/vcschedule", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      }
+    } catch {}
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("cavallery_vcschedule"); } catch {}
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cavallery_vcschedule", JSON.stringify(data));
+      const res = await fetch("/api/vcschedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setToast({ msg: "Jadwal VC berhasil disimpan", type: "success" });
+        await load();
+      } else {
+        setToast({ msg: json.message || "Gagal menyimpan", type: "error" });
       }
-      setToast({ msg: "Jadwal VC berhasil disimpan", type: "success" });
     } catch {
       setToast({ msg: "Gagal menyimpan", type: "error" });
     }
@@ -3398,28 +3410,41 @@ function AboutErineManager() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_about_erine") : null;
-      if (saved) setSlides(JSON.parse(saved));
-      else setSlides(DEFAULT_ABOUT_ERINE);
-    } catch {
-      setSlides(DEFAULT_ABOUT_ERINE);
+      const res = await fetch("/api/about-erine", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setSlides(json.data);
+        }
+      }
+    } catch {}
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("cavallery_about_erine"); } catch {}
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cavallery_about_erine", JSON.stringify(slides));
+      const res = await fetch("/api/about-erine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(slides),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setToast({ msg: "Berhasil menyimpan foto About Erine", type: "success" });
+        await load();
+      } else {
+        setToast({ msg: json.message || "Gagal menyimpan", type: "error" });
       }
-      setToast({ msg: "Berhasil menyimpan foto About Erine", type: "success" });
     } catch {
       setToast({ msg: "Gagal menyimpan", type: "error" });
     }
@@ -3473,28 +3498,41 @@ function AnggotaKotaManager() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_anggota_kota") : null;
-      if (saved) setCityData(JSON.parse(saved));
-      else setCityData(DEFAULT_CITIES);
-    } catch {
-      setCityData(DEFAULT_CITIES);
+      const res = await fetch("/api/anggota-kota", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setCityData(json.data);
+        }
+      }
+    } catch {}
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("cavallery_anggota_kota"); } catch {}
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("cavallery_anggota_kota", JSON.stringify(cityData));
+      const res = await fetch("/api/anggota-kota", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cityData),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setToast({ msg: "Berhasil menyimpan Anggota Kota", type: "success" });
+        await load();
+      } else {
+        setToast({ msg: json.message || "Gagal menyimpan", type: "error" });
       }
-      setToast({ msg: "Berhasil menyimpan Anggota Kota", type: "success" });
     } catch {
       setToast({ msg: "Gagal menyimpan", type: "error" });
     }
@@ -4524,126 +4562,35 @@ function DashboardHome({ onNav }: { onNav: (s: Section) => void }) {
 
   useEffect(() => {
     ([
-      { key: "news",     path: "/news"     },
-      { key: "timeline", path: "/timeline" },
-      { key: "gallery",  path: "/gallery"  },
-      { key: "setlists", path: "/setlists" },
-      { key: "youtube",  path: "/youtube"  },
-      { key: "funfacts", path: "/funfacts" },
-      { key: "kabesha",  path: "/kabesha"  },
-      { key: "stats",    path: "/stats"    },
-      { key: "media",    path: "/media"    },
-      { key: "journal",  path: ""          },
-      { key: "bot",      path: ""          },
-      { key: "tickets",  path: ""          },
-      { key: "calendar", path: ""          },
-      { key: "updates",  path: ""          },
-      { key: "anggotakota", path: ""       },
-      { key: "abouterine",  path: ""       },
-      { key: "invitations", path: ""       },
+      { key: "news",        path: "/api/news"        },
+      { key: "timeline",    path: "/api/timeline"    },
+      { key: "gallery",     path: "/api/gallery"     },
+      { key: "setlists",    path: "/api/setlists"    },
+      { key: "youtube",     path: "/api/youtube"     },
+      { key: "funfacts",    path: "/api/funfacts"    },
+      { key: "kabesha",     path: "/api/kabesha"     },
+      { key: "stats",       path: "/api/stats"       },
+      { key: "media",       path: "/api/published-media" },
+      { key: "journal",     path: "/api/journal"     },
+      { key: "bot",         path: "/api/bot-config"  },
+      { key: "tickets",     path: "/api/tickets"     },
+      { key: "calendar",    path: "/api/calendar"    },
+      { key: "updates",     path: "/api/updates"     },
+      { key: "anggotakota", path: "/api/anggota-kota" },
+      { key: "abouterine",  path: "/api/about-erine"  },
+      { key: "invitations", path: "/api/invitations" },
+      { key: "vcschedule",  path: "/api/vcschedule"  },
     ] as { key: string; path: string }[]).forEach(async ({ key, path }) => {
       try {
-        if (key === "tickets") {
-          try {
-            const res = await fetch(TICKET_SCRIPT_URL);
-            const raw = await res.json();
-            const count = Array.isArray(raw) ? Math.max(0, raw.length - 1) : 0;
-            setCounts(prev => ({ ...prev, [key]: count }));
-          } catch {
-            setCounts(prev => ({ ...prev, [key]: 2 }));
-          }
-          return;
-        }
-        if (key === "journal") {
-          let count = DEFAULT_JOURNAL_MESSAGES.length;
-          try {
-            const res = await fetch("/api/journal");
-            if (res.ok) {
-              const raw = await res.json();
-              const arr = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : null);
-              if (arr && arr.length > 0) count = arr.length;
-            }
-          } catch {
-            const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_journal") : null;
-            if (saved) {
-              const arr = JSON.parse(saved);
-              if (Array.isArray(arr)) count = arr.length;
-            }
-          }
+        const res = await fetch(path, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          let count = 0;
+          const data = json?.data !== undefined ? json.data : (Array.isArray(json) ? json : json?.publishedIds);
+          if (Array.isArray(data)) count = data.length;
+          else if (typeof data === "object" && data !== null) count = Object.keys(data).length;
           setCounts(prev => ({ ...prev, [key]: count }));
-          return;
         }
-        if (key === "bot") {
-          let count = DEFAULT_BOT_CONFIG.rules.length;
-          try {
-            const res = await fetch("/api/bot-config");
-            if (res.ok) {
-              const raw = await res.json();
-              if (raw?.data?.rules && Array.isArray(raw.data.rules)) count = raw.data.rules.length;
-            }
-          } catch {
-            const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_bot_config") : null;
-            if (saved) {
-              const conf = JSON.parse(saved);
-              if (Array.isArray(conf?.rules)) count = conf.rules.length;
-            }
-          }
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-        if (key === "calendar") {
-          const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_calendar") : null;
-          const count = saved ? JSON.parse(saved).length : 0;
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-        if (key === "updates") {
-          const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_updates") : null;
-          const count = saved ? JSON.parse(saved).length : DEFAULT_UPDATES.length;
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-        if (key === "anggotakota") {
-          const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_anggota_kota") : null;
-          const count = saved ? Object.keys(JSON.parse(saved)).length : Object.keys(DEFAULT_CITIES).length;
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-        if (key === "abouterine") {
-          const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_about_erine") : null;
-          const count = saved ? JSON.parse(saved).length : DEFAULT_ABOUT_ERINE.length;
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-        if (key === "invitations") {
-          try {
-            const res = await fetch("/api/invitations");
-            if (res.ok) {
-              const json = await res.json();
-              if (json?.data && Array.isArray(json.data)) {
-                setCounts(prev => ({ ...prev, [key]: json.data.length }));
-                return;
-              }
-            }
-          } catch {}
-          const saved = typeof window !== "undefined" ? localStorage.getItem("cavallery_invitations") : null;
-          const count = saved ? JSON.parse(saved).length : DEFAULT_INVITATIONS.length;
-          setCounts(prev => ({ ...prev, [key]: count }));
-          return;
-        }
-
-        const url = api(path);
-        const res = await fetch(url);
-        const json = await res.json();
-        let count = 0;
-        const data = json?.data;
-        if      (Array.isArray(data))       count = data.length;
-        else if (data?.total !== undefined) count = data.total;
-        else if (data?.news)                count = data.news.length;
-        else if (data?.items)               count = data.items.length;
-        else if (data?.videos)              count = data.videos.length;
-        else if (data?.events)              count = data.events.length;
-        setCounts(prev => ({ ...prev, [key]: count }));
       } catch {}
     });
   }, []);

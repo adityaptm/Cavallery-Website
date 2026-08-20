@@ -16,10 +16,11 @@ export default function GalleryPage() {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   useEffect(() => {
-    fetch("https://v5.jkt48connect.com/api/cavallery/gallery?apikey=JKTCONNECT")
+    fetch("/api/gallery")
       .then((res) => res.json())
       .then((json) => {
-        if (json?.status) setItems(json.data.items);
+        const list = Array.isArray(json) ? json : (json?.data?.items || json?.data || []);
+        if (Array.isArray(list)) setItems(list);
       })
       .catch(console.error)
       .finally(() => setLoading(false));

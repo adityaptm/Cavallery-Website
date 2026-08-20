@@ -11,13 +11,26 @@ export default function TicketingSection() {
     setStatus("loading");
     
     const formData = new FormData(e.currentTarget);
-    const scriptURL = "https://script.google.com/macros/s/AKfycby3B6MCdryHfKxNf8TKFq_Rtu7_PX9QIPy8ecfnG4Il8sgOoIh-Vqno9KWncgf9QXWg7g/exec";
+    const isAnon = identityType === "anonymous";
 
     try {
-      await fetch(scriptURL, { method: "POST", body: formData });
-      setStatus("success");
+      const res = await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: isAnon ? "Anonymous" : ((formData.get("name") as string) || (formData.get("Nama") as string) || "Anonymous"),
+          no_anggota: (formData.get("no_anggota") as string) || "-",
+          kategori: (formData.get("kategori") as string) || "Lainnya",
+          pesan: (formData.get("pesan") as string) || "",
+        }),
+      });
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
     } catch (error) {
-      console.error("Error!", error);
+      console.error("Error submitting ticket:", error);
       setStatus("error");
     }
   };

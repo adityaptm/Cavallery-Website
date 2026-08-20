@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "../page.module.css";
 
+import { query, isMySqlConfigured } from "@/lib/mysql";
+
 interface NewsDetail {
   id: string;
   slug: string;
@@ -17,19 +19,49 @@ interface NewsDetail {
 
 async function getNewsDetail(slug: string): Promise<NewsDetail | null> {
   try {
+    if (isMySqlConfigured()) {
+      const rows = await query<any[]>("SELECT * FROM `news` WHERE `slug`=? OR `id`=? LIMIT 1", [slug, slug]);
+      if (rows && rows.length > 0) {
+        const r = rows[0];
+        return {
+          id: String(r.id),
+          slug: r.slug || String(r.id),
+          title: r.title || "",
+          label: r.label || r.category || "Cavallery",
+          description: r.description || r.summary || "",
+          content: r.content || "",
+          image_url: r.image_url || "",
+          images: r.images || "",
+          published_at: r.published_at ? new Date(r.published_at).toISOString() : new Date().toISOString(),
+        };
+      }
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
     const res = await fetch(
-      `https://v5.jkt48connect.com/api/cavallery/news/${slug}?apikey=JKTCONNECT`,
+      `${baseUrl}/api/news/${slug}`,
       {
         cache: "no-store",
         headers: {
           "Accept": "application/json",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0"
         }
       }
     );
     if (!res.ok) return null;
     const json = await res.json();
-    return json?.data ?? null;
+    const data = json?.data ?? (json?.id ? json : null);
+    if (!data) return null;
+    return {
+      id: String(data.id),
+      slug: data.slug || String(data.id),
+      title: data.title || "",
+      label: data.label || data.category || "Cavallery",
+      description: data.description || data.summary || "",
+      content: data.content || "",
+      image_url: data.image_url || "",
+      images: data.images || "",
+      published_at: data.published_at ? new Date(data.published_at).toISOString() : new Date().toISOString(),
+    };
   } catch {
     return null;
   }
@@ -53,22 +85,31 @@ function renderContent(content: string) {
   ));
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
+    if (isMySqlConfigured()) {
+      const rows = await query<any[]>("SELECT `id`, `slug` FROM `news`");
+      if (rows && rows.length > 0) {
+        return rows.map((r: any) => ({
+          slug: String(r.slug || r.id),
+        }));
+      }
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
     const res = await fetch(
-      "https://v5.jkt48connect.com/api/cavallery/news?apikey=JKTCONNECT",
+      `${baseUrl}/api/news`,
       {
         headers: {
           "Accept": "application/json",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
         },
       }
     );
     if (!res.ok) return [{ slug: "detail" }];
     const json = await res.json();
-    const list = json?.data?.news || (Array.isArray(json?.data) ? json.data : []);
+    const list = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : json?.data?.news || []);
     const slugs = list.map((item: any) => ({
       slug: String(item.slug || item.id),
     }));

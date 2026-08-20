@@ -181,19 +181,22 @@ export default function CalendarSection() {
   useEffect(() => {
     async function fetchManual() {
       try {
-        const res = await fetch("/api/calendar");
+        const res = await fetch("/api/calendar", { cache: "no-store" });
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          const manual: Show[] = json.data.map((item: any) => ({
-            id: `manual-${item.id}`,
-            title: `${item.title}`,
-            date: `${item.date}T00:00:00`, // To avoid timezone issues when checking year/month
-            startTime: item.startTime,
-            url: item.url,
-            members: item.members || [{ name: "Cavallery" }],
-            thumbnail: item.imageUrl || "/images/cava-logo.jpg",
-            isManual: true,
-          }));
+          const manual: Show[] = json.data.map((item: any) => {
+            const rawDate = item.date ? String(item.date).slice(0, 10) : "";
+            return {
+              id: `manual-${item.id}`,
+              title: `${item.title}`,
+              date: `${rawDate}T00:00:00`, // To avoid timezone issues when checking year/month
+              startTime: item.startTime,
+              url: item.url,
+              members: item.members || [{ name: "Cavallery" }],
+              thumbnail: item.imageUrl || "/images/cava-logo.jpg",
+              isManual: true,
+            };
+          });
           setApiManualEvents(manual);
         }
       } catch (err) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { query, isMySqlConfigured } from "@/lib/mysql";
 
 const isVercel = process.env.VERCEL === "1";
 const DATA_DIR = isVercel ? "/tmp" : path.join(process.cwd(), "src", "data");
@@ -132,7 +133,6 @@ export function readBotConfig() {
     console.error("Error reading bot_config.json:", e);
   }
 
-  // Default configuration
   const defaultConfig = {
     apiKey: process.env.GEMINI_API_KEY || "AIzaSyA6SbeC1Ktwu1l1nC2ES1WF3kQagN0NiX0",
     fallbackResponse: "Wah pertanyaan seru nih! Sayangnya aku belum punya info detail soal itu. Coba tanyain aku soal Erine, setlist teaternya, projek Cavallery kayak #RoseObscura, atau hestek-hestek seru lainnya ya! Aku pasti bisa bantu.",
@@ -161,6 +161,18 @@ function writeBotConfig(config: any) {
 
 export async function GET() {
   try {
+    if (isMySqlConfigured()) {
+      const rows = await query<any[]>("SELECT `content_json` FROM `about_erine` WHERE `section_key`='bot_config' LIMIT 1");
+      if (rows && rows.length > 0) {
+        try {
+          const parsed = JSON.parse(rows[0].content_json);
+          if (parsed && typeof parsed === "object") {
+            inMemoryBotConfig = parsed;
+            return NextResponse.json({ status: true, data: parsed });
+          }
+        } catch {}
+      }
+    }
     const config = readBotConfig();
     return NextResponse.json({ status: true, data: config });
   } catch (error: any) {
@@ -186,6 +198,13 @@ export async function POST(request: Request) {
     }
     if (body.rules !== undefined && Array.isArray(body.rules)) {
       config.rules = body.rules;
+    }
+
+    if (isMySqlConfigured()) {
+      await query(
+        "INSERT INTO `about_erine` (`section_key`, `title`, `content_json`) VALUES ('bot_config', 'Bot AI Configuration', ?) ON DUPLICATE KEY UPDATE `content_json`=VALUES(`content_json`)",
+        [JSON.stringify(config)]
+      );
     }
 
     writeBotConfig(config);

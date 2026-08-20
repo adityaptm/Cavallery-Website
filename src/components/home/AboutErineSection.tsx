@@ -4,8 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import styles from "./AboutErineSection.module.css";
 
-function parseSongs(raw: string): string[] {
+function parseSongs(raw: any): string[] {
   if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== "string") return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
   return raw
     .replace(/^\{/, "").replace(/\}$/, "")
     .split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
@@ -121,14 +127,20 @@ export default function AboutErineSection() {
       .catch(() => {})
       .finally(() => setPmLoading(false));
 
-    fetch("https://v5.jkt48connect.com/api/cavallery/setlists?apikey=JKTCONNECT")
+    fetch("/api/setlists")
       .then((r) => r.json())
-      .then((json) => { if (json?.status) setSetlists(json.data); })
+      .then((json) => {
+        const data = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+        setSetlists(data);
+      })
       .catch(console.error);
 
-    fetch("https://v5.jkt48connect.com/api/cavallery/stats?apikey=JKTCONNECT")
+    fetch("/api/stats")
       .then((r) => r.json())
-      .then((json) => { if (json?.status) setStatsData(json.data); })
+      .then((json) => {
+        const data = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+        setStatsData(data);
+      })
       .catch(console.error);
 
     fetch("/api/updates")
@@ -496,13 +508,13 @@ export default function AboutErineSection() {
           ) : (
             setlists.map((set, idx) => (
               <FlipCard
-                key={set.id}
+                key={set.id || idx}
                 set={{
                   title: set.title,
-                  date: set.date_range,
-                  badge: set.badge,
-                  img: set.image_url,
-                  songs: parseSongs(set.songs),
+                  date: set.date_range || set.release_date || "",
+                  badge: set.badge || set.status || "",
+                  img: set.image_url || set.cover_image || "",
+                  songs: parseSongs(set.songs || set.songs_json),
                 }}
                 idx={idx}
               />
