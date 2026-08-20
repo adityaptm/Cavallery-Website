@@ -5,20 +5,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { stat_key, label, value, icon, sort_order } = body;
 
-    await query(
-      "UPDATE `stats` SET `label`=?, `value`=?, `icon`=?, `sort_order`=? WHERE `stat_key`=? OR `id`=?",
-      [
-        body.label || "",
-        String(body.value || "0"),
-        body.icon || "bx-bar-chart",
-        Number(body.sort_order) || 0,
-        id,
-        isNaN(Number(id)) ? -1 : Number(id)
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, message: "Statistik berhasil diupdate" });
+    if (isMySqlConfigured()) {
+      await query(
+        "UPDATE `stats` SET `label`=?, `value`=?, `icon`=?, `sort_order`=? WHERE `id`=? OR `stat_key`=?",
+        [label || "", String(value || "0"), icon || "", sort_order || 0, id, id]
+      );
+    }
+    return NextResponse.json({ status: true, success: true, data: { id, ...body } });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
@@ -27,9 +22,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
-    await query("DELETE FROM `stats` WHERE `stat_key`=? OR `id`=?", [id, isNaN(Number(id)) ? -1 : Number(id)]);
-    return NextResponse.json({ status: true, success: true, message: "Statistik berhasil dihapus" });
+    if (isMySqlConfigured()) {
+      await query("DELETE FROM `stats` WHERE `id`=? OR `stat_key`=?", [id, id]);
+    }
+    return NextResponse.json({ status: true, success: true, message: "Deleted" });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

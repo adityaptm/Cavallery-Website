@@ -9,31 +9,25 @@ export async function GET() {
     }
     return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: [] }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { title, slug, price, original_price, discount_percent, description, image_url, gallery_json, category, status, shopee_url, tokopedia_url, is_featured, is_active, sort_order } = body;
 
-    const result: any = await query(
-      "INSERT INTO `merch` (`title`, `slug`, `price`, `description`, `image_url`, `shopee_url`, `tokopedia_url`, `category`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        body.name || body.title || "",
-        body.slug || `merch-${Date.now()}`,
-        String(body.price || "0"),
-        body.description || "",
-        body.image_url || "",
-        body.buy_url || body.shopee_url || "",
-        body.tokopedia_url || "",
-        body.category || "Official",
-        Number(body.sort_order) || 0,
-        body.is_available !== undefined ? (body.is_available ? 1 : 0) : (body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1)
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Merchandise berhasil ditambahkan" });
+    const merchSlug = slug || (title ? title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `merch-${Date.now()}`);
+
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `merch` (`title`, `slug`, `price`, `original_price`, `discount_percent`, `description`, `image_url`, `gallery_json`, `category`, `status`, `shopee_url`, `tokopedia_url`, `is_featured`, `is_active`, `sort_order`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [title || "", merchSlug, price || 0, original_price || 0, discount_percent || 0, description || "", image_url || "", gallery_json || "[]", category || "", status || "available", shopee_url || "", tokopedia_url || "", is_featured ? 1 : 0, is_active !== false ? 1 : 0, sort_order || 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

@@ -17,20 +17,40 @@ interface NewsItem {
   is_active: boolean;
 }
 
-const API_URL = "https://v5.jkt48connect.com/api/cavallery/news?apikey=JKTCONNECT";
+const API_URL = "/api/news";
 
 export default function NewsPreview() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}&_t=${Date.now()}`)
+    fetch(`${API_URL}?_t=${Date.now()}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d?.status && Array.isArray(d?.data?.news)) {
+        const rawList = Array.isArray(d)
+          ? d
+          : Array.isArray(d?.data)
+          ? d.data
+          : Array.isArray(d?.data?.news)
+          ? d.data.news
+          : [];
+        if (rawList.length > 0) {
           // Tampilkan hanya yang aktif, pinned duluan
-          const items: NewsItem[] = d.data.news
-            .filter((n: NewsItem) => n.is_active)
+          const items: NewsItem[] = rawList
+            .filter((n: any) => n.is_active !== false)
+            .map((n: any) => ({
+              id: String(n.id || n.slug || Math.random()),
+              slug: n.slug || String(n.id || ""),
+              title: n.title || "",
+              label: n.label || n.category || "Terkini",
+              description: n.description || n.summary || "",
+              published_at: n.published_at || new Date().toISOString(),
+              link_url: n.link_url || (n.slug ? `/news/cavallery-statement/${n.slug}` : "/news"),
+              image_url: n.image_url || null,
+              is_internal: n.is_internal !== undefined ? n.is_internal : true,
+              is_pinned: Boolean(n.is_pinned),
+              is_active: n.is_active !== false,
+            }))
             .sort((a: NewsItem, b: NewsItem) => Number(b.is_pinned) - Number(a.is_pinned))
             .slice(0, 4);
           setNews(items);

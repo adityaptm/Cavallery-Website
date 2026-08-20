@@ -5,22 +5,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { year, date_label, title, description, badge, image_url, sort_order, is_active } = body;
 
-    await query(
-      "UPDATE `timeline` SET `year`=?, `date_label`=?, `title`=?, `description`=?, `image_url`=?, `sort_order`=?, `is_active`=? WHERE `id`=?",
-      [
-        body.year || "2026",
-        body.date_label || body.event_date || "",
-        body.title || "",
-        body.description || "",
-        body.image_url || "",
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1,
-        id
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, message: "Timeline berhasil diupdate" });
+    if (isMySqlConfigured()) {
+      await query(
+        "UPDATE `timeline` SET `year`=?, `date_label`=?, `title`=?, `description`=?, `badge`=?, `image_url`=?, `sort_order`=?, `is_active`=? WHERE `id`=?",
+        [year || "", date_label || "", title || "", description || "", badge || "", image_url || "", sort_order || 0, is_active ? 1 : 0, id]
+      );
+    }
+    return NextResponse.json({ status: true, success: true, data: { id, ...body } });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
@@ -29,9 +22,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
-    await query("DELETE FROM `timeline` WHERE `id`=?", [id]);
-    return NextResponse.json({ status: true, success: true, message: "Timeline berhasil dihapus" });
+    if (isMySqlConfigured()) {
+      await query("DELETE FROM `timeline` WHERE `id`=?", [id]);
+    }
+    return NextResponse.json({ status: true, success: true, message: "Deleted" });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

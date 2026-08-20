@@ -25,8 +25,7 @@ interface ApiResponse {
   };
 }
 
-const API_URL =
-  "https://v5.jkt48connect.com/api/cavallery/youtube?apikey=JKTCONNECT";
+const API_URL = "/api/youtube";
 
 export default function YoutubeSection() {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -44,15 +43,20 @@ export default function YoutubeSection() {
         setError(null);
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const json: ApiResponse = await res.json();
-        if (json.status && json.data?.videos) {
+        const json: any = await res.json();
+        const rawVideos = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data)
+          ? json.data
+          : json?.data?.videos;
+        if (Array.isArray(rawVideos)) {
           // Only show active videos, sorted by sort_order
-          const activeVideos = json.data.videos
-            .filter((v) => v.is_active)
-            .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
+          const activeVideos = rawVideos
+            .filter((v: YtVideo) => v.is_active !== false)
+            .sort((a: YtVideo, b: YtVideo) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
           setVideos(activeVideos);
         } else {
-          throw new Error(json.message || "Gagal mengambil data video");
+          throw new Error(json?.message || "Gagal mengambil data video");
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Terjadi kesalahan");

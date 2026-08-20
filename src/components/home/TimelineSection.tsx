@@ -43,10 +43,20 @@ export default function TimelineSection() {
   };
 
   useEffect(() => {
-    fetch("https://v5.jkt48connect.com/api/cavallery/timeline?apikey=JKTCONNECT")
+    fetch("/api/timeline")
       .then((r) => r.json())
       .then((json) => {
-        if (json?.status) setTimelineData(json.data);
+        if (json?.data?.events) {
+          setTimelineData(json.data);
+        } else {
+          const events = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+          if (events.length > 0) {
+            const years = Array.from(new Set(events.map((e: TimelineEvent) => e.year).filter(Boolean))) as string[];
+            setTimelineData({ years, events });
+          } else {
+            setTimelineData({ years: [], events: [] });
+          }
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));

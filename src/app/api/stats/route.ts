@@ -9,26 +9,23 @@ export async function GET() {
     }
     return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: [] }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { stat_key, label, value, icon, sort_order } = body;
 
-    const result: any = await query(
-      "INSERT INTO `stats` (`stat_key`, `label`, `value`, `icon`, `sort_order`) VALUES (?, ?, ?, ?, ?)",
-      [
-        body.stat_key || "stat_" + Date.now(),
-        body.label || "",
-        String(body.value || "0"),
-        body.icon || "bx-bar-chart",
-        Number(body.sort_order) || 0
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Statistik berhasil ditambahkan" });
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `stats` (`stat_key`, `label`, `value`, `icon`, `sort_order`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `label`=VALUES(`label`), `value`=VALUES(`value`), `icon`=VALUES(`icon`), `sort_order`=VALUES(`sort_order`)",
+        [stat_key || "", label || "", String(value || "0"), icon || "", sort_order || 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

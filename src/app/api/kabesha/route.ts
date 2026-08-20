@@ -4,36 +4,29 @@ import { query, isMySqlConfigured } from "@/lib/mysql";
 export async function GET() {
   try {
     if (isMySqlConfigured()) {
-      const rows = await query<any[]>("SELECT * FROM `kabesha` ORDER BY `sort_order` ASC, `id` ASC");
-      const mapped = (rows || []).map(r => ({
-        ...r,
-        year_label: r.era || "2026",
-        era_name: r.title
-      }));
-      return NextResponse.json({ status: true, success: true, data: mapped });
+      const rows = await query<any[]>("SELECT * FROM `kabesha` ORDER BY `sort_order` ASC, `id` DESC");
+      return NextResponse.json({ status: true, success: true, data: rows || [] });
     }
     return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: [] }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { title, era, year_label, image_url, is_current, sort_order, is_active } = body;
+    const eraLabel = era || year_label || "";
 
-    const result: any = await query(
-      "INSERT INTO `kabesha` (`title`, `era`, `image_url`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?)",
-      [
-        body.title || body.era_name || "",
-        body.year_label || body.era || "2026",
-        body.image_url || "",
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Kabesha berhasil ditambahkan" });
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `kabesha` (`title`, `era`, `image_url`, `is_current`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?)",
+        [title || "", eraLabel, image_url || "", is_current ? 1 : 0, sort_order || 0, is_active ? 1 : 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

@@ -5,25 +5,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { title, slug, price, original_price, discount_percent, description, image_url, gallery_json, category, status, shopee_url, tokopedia_url, is_featured, is_active, sort_order } = body;
 
-    await query(
-      "UPDATE `merch` SET `title`=?, `slug`=?, `price`=?, `description`=?, `image_url`=?, `shopee_url`=?, `tokopedia_url`=?, `category`=?, `sort_order`=?, `is_active`=? WHERE `id`=?",
-      [
-        body.name || body.title || "",
-        body.slug || `merch-${id}`,
-        String(body.price || "0"),
-        body.description || "",
-        body.image_url || "",
-        body.buy_url || body.shopee_url || "",
-        body.tokopedia_url || "",
-        body.category || "Official",
-        Number(body.sort_order) || 0,
-        body.is_available !== undefined ? (body.is_available ? 1 : 0) : (body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1),
-        id
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, message: "Merchandise berhasil diupdate" });
+    const merchSlug = slug || (title ? title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `merch-${Date.now()}`);
+
+    if (isMySqlConfigured()) {
+      await query(
+        "UPDATE `merch` SET `title`=?, `slug`=?, `price`=?, `original_price`=?, `discount_percent`=?, `description`=?, `image_url`=?, `gallery_json`=?, `category`=?, `status`=?, `shopee_url`=?, `tokopedia_url`=?, `is_featured`=?, `is_active`=?, `sort_order`=? WHERE `id`=? OR `slug`=?",
+        [title || "", merchSlug, price || 0, original_price || 0, discount_percent || 0, description || "", image_url || "", gallery_json || "[]", category || "", status || "available", shopee_url || "", tokopedia_url || "", is_featured ? 1 : 0, is_active !== false ? 1 : 0, sort_order || 0, id, id]
+      );
+    }
+    return NextResponse.json({ status: true, success: true, data: { id, ...body } });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
@@ -32,9 +24,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
-    await query("DELETE FROM `merch` WHERE `id`=?", [id]);
-    return NextResponse.json({ status: true, success: true, message: "Merchandise berhasil dihapus" });
+    if (isMySqlConfigured()) {
+      await query("DELETE FROM `merch` WHERE `id`=? OR `slug`=?", [id, id]);
+    }
+    return NextResponse.json({ status: true, success: true, message: "Deleted" });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

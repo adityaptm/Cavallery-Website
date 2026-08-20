@@ -4,34 +4,28 @@ import { query, isMySqlConfigured } from "@/lib/mysql";
 export async function GET() {
   try {
     if (isMySqlConfigured()) {
-      const rows = await query<any[]>("SELECT * FROM `timeline` ORDER BY `year` DESC, `sort_order` ASC, `id` DESC");
-      return NextResponse.json({ status: true, success: true, data: { events: rows || [] } });
+      const rows = await query<any[]>("SELECT * FROM `timeline` ORDER BY `sort_order` ASC, `id` DESC");
+      return NextResponse.json({ status: true, success: true, data: rows || [] });
     }
-    return NextResponse.json({ status: true, success: true, data: { events: [] } });
+    return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: { events: [] } }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) {
-      return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { year, date_label, title, description, badge, image_url, sort_order, is_active } = body;
+
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `timeline` (`year`, `date_label`, `title`, `description`, `badge`, `image_url`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [year || "", date_label || "", title || "", description || "", badge || "", image_url || "", sort_order || 0, is_active ? 1 : 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
     }
-    const result: any = await query(
-      "INSERT INTO `timeline` (`year`, `date_label`, `title`, `description`, `image_url`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        body.year || "2026",
-        body.date_label || body.event_date || "",
-        body.title || "",
-        body.description || "",
-        body.image_url || "",
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Timeline berhasil ditambahkan" });
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

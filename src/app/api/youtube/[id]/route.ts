@@ -5,30 +5,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    let { title, video_id, url, thumbnail, published_at, is_active, sort_order } = body;
 
-    let videoId = body.video_id || "";
-    if (!videoId && body.url) {
-      const match = body.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-      if (match) videoId = match[1];
+    if (!video_id && url) {
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+      if (match) video_id = match[1];
     }
-    const thumbnail = body.thumbnail || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "");
+    if (!thumbnail && video_id) {
+      thumbnail = `https://img.youtube.com/vi/${video_id}/hqdefault.jpg`;
+    }
 
-    await query(
-      "UPDATE `youtube` SET `title`=?, `video_id`=?, `url`=?, `thumbnail`=?, `published_at`=?, `sort_order`=?, `is_active`=? WHERE `video_id`=? OR `id`=?",
-      [
-        body.title || "",
-        videoId,
-        body.url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : ""),
-        thumbnail,
-        body.published_at || new Date().toISOString(),
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1,
-        id,
-        isNaN(Number(id)) ? -1 : Number(id)
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, message: "Video YouTube berhasil diupdate" });
+    if (isMySqlConfigured()) {
+      await query(
+        "UPDATE `youtube` SET `title`=?, `video_id`=?, `url`=?, `thumbnail`=?, `published_at`=?, `is_active`=?, `sort_order`=? WHERE `id`=? OR `video_id`=?",
+        [title || "", video_id || "", url || "", thumbnail || "", published_at || "", is_active ? 1 : 0, sort_order || 0, id, id]
+      );
+    }
+    return NextResponse.json({ status: true, success: true, data: { id, ...body } });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
@@ -37,9 +30,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
-    await query("DELETE FROM `youtube` WHERE `video_id`=? OR `id`=?", [id, isNaN(Number(id)) ? -1 : Number(id)]);
-    return NextResponse.json({ status: true, success: true, message: "Video YouTube berhasil dihapus" });
+    if (isMySqlConfigured()) {
+      await query("DELETE FROM `youtube` WHERE `id`=? OR `video_id`=?", [id, id]);
+    }
+    return NextResponse.json({ status: true, success: true, message: "Deleted" });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

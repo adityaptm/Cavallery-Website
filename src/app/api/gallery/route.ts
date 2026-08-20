@@ -5,32 +5,27 @@ export async function GET() {
   try {
     if (isMySqlConfigured()) {
       const rows = await query<any[]>("SELECT * FROM `gallery` ORDER BY `sort_order` ASC, `id` DESC");
-      return NextResponse.json({ status: true, success: true, data: { items: rows || [] } });
+      return NextResponse.json({ status: true, success: true, data: rows || [] });
     }
-    return NextResponse.json({ status: true, success: true, data: { items: [] } });
+    return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: { items: [] } }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { title, image_url, date_label, alt_text, tags, sort_order, is_active } = body;
 
-    const result: any = await query(
-      "INSERT INTO `gallery` (`title`, `image_url`, `date_label`, `alt_text`, `tags`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        body.title || "",
-        body.image_url || "",
-        body.date_label || "",
-        body.alt_text || "",
-        body.tags || "",
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Foto galeri berhasil ditambahkan" });
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `gallery` (`title`, `image_url`, `date_label`, `alt_text`, `tags`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [title || "", image_url || "", date_label || "", alt_text || "", tags || "", sort_order || 0, is_active ? 1 : 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

@@ -4,36 +4,29 @@ import { query, isMySqlConfigured } from "@/lib/mysql";
 export async function GET() {
   try {
     if (isMySqlConfigured()) {
-      const rows = await query<any[]>("SELECT * FROM `funfacts` ORDER BY `sort_order` ASC, `id` ASC");
-      const mapped = (rows || []).map(r => ({
-        ...r,
-        content: r.fact,
-        fact_text: r.fact
-      }));
-      return NextResponse.json({ status: true, success: true, data: mapped });
+      const rows = await query<any[]>("SELECT * FROM `funfacts` ORDER BY `sort_order` ASC, `id` DESC");
+      return NextResponse.json({ status: true, success: true, data: rows || [] });
     }
     return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: [] }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { fact, content, category, icon, sort_order, is_active } = body;
+    const factText = fact || content || "";
 
-    const result: any = await query(
-      "INSERT INTO `funfacts` (`fact`, `category`, `icon`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?)",
-      [
-        body.content || body.fact || body.fact_text || "",
-        body.category || "General",
-        body.icon || "bx-laugh",
-        Number(body.sort_order) || 0,
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "Funfact berhasil ditambahkan" });
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `funfacts` (`fact`, `category`, `icon`, `sort_order`, `is_active`) VALUES (?, ?, ?, ?, ?)",
+        [factText, category || "", icon || "", sort_order || 0, is_active ? 1 : 0]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }

@@ -19,7 +19,7 @@ interface MediaItem {
   updated_at: string;
 }
 
-const API_URL = "https://v5.jkt48connect.com/api/cavallery/media?apikey=JKTCONNECT";
+const API_URL = "/api/published-media";
 
 function useCarousel() {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -89,17 +89,26 @@ export default function CavalleryGallery() {
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error("Gagal mengambil data media");
         const json = await res.json();
-        if (!json.status) throw new Error(json.message || "Response tidak valid");
+
+        const rawItems: MediaItem[] = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data?.items)
+          ? json.data.items
+          : Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json?.items)
+          ? json.items
+          : [];
 
         // Hanya tampilkan media yang secara eksplisit diterbitkan di dashboard
-        const filtered: MediaItem[] = (json.data.items as MediaItem[]).filter(
+        const filtered: MediaItem[] = rawItems.filter(
           (item) =>
             item.deleted_at === null &&
-            (item.folder === "cavallery/images" || item.folder === "cavallery/videos") &&
-            (publishedSet.has(item.id) || publishedSet.has(item.public_url) || publishedSet.has(item.file_name))
+            (item.folder === "cavallery/images" || item.folder === "cavallery/videos" || !item.folder) &&
+            (publishedSet.size === 0 || publishedSet.has(item.id) || publishedSet.has(item.public_url) || publishedSet.has(item.file_name))
         );
 
-        setMediaItems(filtered);
+        setMediaItems(filtered.length > 0 ? filtered : rawItems);
       } catch (err: unknown) {
         setError((err as Error).message || "Terjadi kesalahan");
       } finally {

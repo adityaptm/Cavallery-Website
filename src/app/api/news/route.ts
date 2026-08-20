@@ -5,54 +5,35 @@ export async function GET() {
   try {
     if (isMySqlConfigured()) {
       const rows = await query<any[]>("SELECT * FROM `news` ORDER BY `published_at` DESC, `id` DESC");
-      const mapped = (rows || []).map(r => ({
-        ...r,
-        label: r.category || "Statement",
-        description: r.summary || r.content?.slice(0, 120),
-        link_url: `/news/cavallery-statement/${r.slug || r.id}`
-      }));
-      return NextResponse.json({ status: true, success: true, data: { news: mapped } });
-    }
-
-    const defaultNews = [
-      {
-        id: 1,
-        title: "Perilisan Website Resmi Cavallery",
-        slug: "perilisan-website-resmi-cavallery",
-        label: "Statement",
-        description: "Official Fanbase Catherina Vallencia Kurniawan meluncurkan website resmi.",
-        content: "Official Fanbase Catherina Vallencia Kurniawan meluncurkan website resmi.",
-        image_url: "https://pbs.twimg.com/media/Gf43U5EaMAAwQ9G?format=jpg&name=medium",
-        published_at: "2026-08-20",
-        is_active: 1
+      if (rows && rows.length > 0) {
+        return NextResponse.json({ status: true, success: true, data: rows });
       }
-    ];
-    return NextResponse.json({ status: true, success: true, data: { news: defaultNews } });
+    }
+    // Fallback if empty in MySQL
+    return NextResponse.json({ status: true, success: true, data: [] });
   } catch (error: any) {
-    return NextResponse.json({ status: false, success: false, message: error.message, data: { news: [] } }, { status: 500 });
+    return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
+    const { title, slug, summary, description, content, image_url, author, category, label, tags, is_active, published_at } = body;
 
-    const result: any = await query(
-      "INSERT INTO `news` (`title`, `slug`, `summary`, `content`, `image_url`, `author`, `category`, `published_at`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        body.title || "",
-        body.slug || `news-${Date.now()}`,
-        body.description || body.summary || "",
-        body.content || body.description || "",
-        body.image_url || "",
-        body.author || "Cavallery",
-        body.label || body.category || "Statement",
-        body.published_at || new Date().toISOString(),
-        body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
-      ]
-    );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "News berhasil ditambahkan" });
+    const newsSlug = slug || (title ? title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `news-${Date.now()}`);
+    const newsSummary = summary || description || "";
+    const newsCategory = category || label || "General";
+    const pubDate = published_at ? new Date(published_at) : new Date();
+
+    if (isMySqlConfigured()) {
+      const res = await query<any>(
+        "INSERT INTO `news` (`title`, `slug`, `summary`, `content`, `image_url`, `author`, `category`, `tags`, `is_active`, `published_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [title || "", newsSlug, newsSummary, content || "", image_url || "", author || "Cavallery", newsCategory, tags || "", is_active !== false ? 1 : 0, pubDate]
+      );
+      return NextResponse.json({ status: true, success: true, data: { id: res.insertId, ...body } });
+    }
+    return NextResponse.json({ status: true, success: true, data: body });
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
