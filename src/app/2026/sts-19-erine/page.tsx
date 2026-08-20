@@ -262,43 +262,6 @@ function CompassIcon({ className }: { className?: string }) {
 export default function ErineTheWayfinderPage() {
   return (
     <main className={styles.page}>
-      {/* Video Section (Indonesia & Malaysia Videotron) */}
-      <section className={styles.videoSection}>
-        <div className={styles.videoGrid}>
-          {/* Video 1: Indonesia */}
-          <div className={styles.videoCard}>
-            <div className={styles.videoHeader}>
-              <span>Videotron Project Jakarta, Indonesia</span>
-            </div>
-            <video
-              className={styles.heroVideo}
-              src="https://images.jkt48connect.com/cavallery/videos/2026/08/4ba3f44a5c674e6f.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-            />
-          </div>
-
-          {/* Video 2: Malaysia */}
-          <div className={styles.videoCard}>
-            <div className={styles.videoHeader}>
-              <span>Videotron Project Kuala Lumpur, Malaysia</span>
-            </div>
-            <video
-              className={styles.heroVideo}
-              src="https://images.jkt48connect.com/cavallery/videos/2026/08/66c61b08fb884ad2.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Hero Header */}
       <div className={styles.hero}>
         <div className={styles.badge}>

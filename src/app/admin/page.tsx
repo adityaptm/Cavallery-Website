@@ -310,7 +310,7 @@ function MediaUploadModal({
       fd.append("folder", folder);
       fd.append("alt_text", files[0].name);
       try {
-        const res  = await fetch(api("/media/upload"), { method: "POST", body: fd });
+        const res  = await fetch(mediaApi("/media/upload"), { method: "POST", body: fd });
         const json = await res.json();
         if (json.status) {
           setProgress([`✓ ${files[0].name} — berhasil`]);
@@ -326,7 +326,7 @@ function MediaUploadModal({
       files.forEach(f => fd.append("files[]", f));
       fd.append("folder", folder);
       try {
-        const res  = await fetch(api("/media/upload-multiple"), { method: "POST", body: fd });
+        const res  = await fetch(mediaApi("/media/upload-multiple"), { method: "POST", body: fd });
         const json = await res.json();
         const logs: string[] = [];
         (json.data?.uploaded ?? []).forEach((u: any) => logs.push(`✓ ${u.original_name}`));
@@ -439,7 +439,7 @@ function MediaPickerModal({
       if (folder) params.set("folder", folder);
       if (type !== "all") params.set("type", type);
       params.set("limit", "100");
-      const res  = await fetch(`${api("/media")}&${params}`);
+      const res  = await fetch(`${mediaApi("/media")}&${params}`);
       const json = await res.json();
       setItems(json?.data?.items ?? []);
     } catch { setItems([]); }
@@ -708,7 +708,7 @@ function MediaManager() {
       if (folder)     params.set("folder", folder);
       if (filterType) params.set("type",   filterType);
       params.set("limit", "100");
-      const res  = await fetch(`${api("/media")}&${params}`);
+      const res  = await fetch(`${mediaApi("/media")}&${params}`);
       const json = await res.json();
       setItems(json?.data?.items ?? []);
       setTotal(json?.data?.total ?? 0);
@@ -762,7 +762,7 @@ function MediaManager() {
   const deleteOne = async (item: any) => {
     setConfirm(null);
     try {
-      const res  = await fetch(api(`/media/${item.id}`), { method: "DELETE" });
+      const res  = await fetch(mediaApi(`/media/${item.id}`), { method: "DELETE" });
       const json = await res.json();
       if (json.status) {
         showToast("Media berhasil dihapus", "success");
@@ -782,7 +782,7 @@ function MediaManager() {
   const deleteBulk = async () => {
     setConfirm(null);
     try {
-      const res  = await fetch(api("/media/bulk"), {
+      const res  = await fetch(mediaApi("/media/bulk"), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: Array.from(selected) }),
