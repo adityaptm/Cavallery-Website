@@ -16,17 +16,6 @@ interface YtVideo {
   is_active: boolean;
 }
 
-interface ApiResponse {
-  status: boolean;
-  message: string;
-  data: {
-    total: number;
-    limit: number;
-    offset: number;
-    categories: string[];
-    videos: YtVideo[];
-  };
-}
 
 const API_URL = "/api/youtube";
 
@@ -63,18 +52,6 @@ export default function YoutubeSection({
             }
           }
         } catch {}
-
-        if (videoList.length === 0) {
-          try {
-            const extRes = await fetch("https://v5.jkt48connect.com/api/cavallery/youtube?apikey=JKTCONNECT");
-            if (extRes.ok) {
-              const extJson: ApiResponse = await extRes.json();
-              if (extJson.status && extJson.data?.videos) {
-                videoList = extJson.data.videos;
-              }
-            }
-          } catch {}
-        }
 
         const activeVideos = videoList
           .filter((v) => v.is_active !== false && (v.is_active as any) !== 0)

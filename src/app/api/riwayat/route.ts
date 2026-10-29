@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
-
-const API_KEY = "sJbpVqLinYlp";
-const BASE = "https://v5.jkt48connect.com/api/jkt48";
+import { jkt48ConnectGet, pickList } from "@/lib/jkt48connect";
 
 const DEFAULT_ERINE_LIVES: any[] = [
   {
@@ -124,25 +122,14 @@ export async function GET() {
       key: "erine_riwayat_live",
       ttlSeconds: 600, // Cache 10 menit
       fetcher: async () => {
-        const res = await fetch(
-          `${BASE}/recent?page=all&name=Erine%20JKT48&priority_token=${API_KEY}`,
-          {
-            headers: {
-              "x-priority-token": API_KEY,
-              Accept: "application/json",
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
-            },
-            next: { revalidate: 600 },
-            signal: AbortSignal.timeout(8000),
-          }
+        // Recent sessions (api.jkt48connect.app), newest first; Erine filtered locally
+        const json = await jkt48ConnectGet(
+          "/api/recent",
+          { page: 1, perpage: 100, group: "jkt48", type: "all", sort: "date", order: -1, search: "Erine" },
+          { revalidate: 600, timeoutMs: 8000 }
         );
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch recent data: ${res.statusText}`);
-        }
-
-        const json = await res.json();
-        const rawList = Array.isArray(json) ? json : json.data || [];
+        if (json === null) throw new Error("JKT48Connect recent tidak tersedia");
+        const rawList = pickList(json, "recents", "data");
         const erineItems = rawList.filter(isErine);
 
         return erineItems.length > 0 ? erineItems : DEFAULT_ERINE_LIVES;

@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
-
-const API_KEY = "sJbpVqLinYlp";
-const BASE = "https://v5.jkt48connect.com/api/jkt48";
+import { jkt48ConnectGet, pickList, toWib, type JkcMember, type JkcTheaterDetail, type JkcTheaterItem } from "@/lib/jkt48connect";
 
 const ERINE_KEYS = ["erine", "catherina", "vallencia"];
 function isErine(name: string) {
@@ -59,28 +57,81 @@ export function getMasterShows(): any[] {
   return [];
 }
 
+/** Theater list from api.jkt48connect.app (no lineup in the list). */
+async function fetchJkcTheaterList(): Promise<JkcTheaterItem[]> {
+  return fetchWithCacheAndFallback<JkcTheaterItem[]>({
+    key: "jkc_theater_list",
+    ttlSeconds: 600,
+    fetcher: async () => {
+      const json = await jkt48ConnectGet("/api/theater", { page: 1, perpage: 100, type: "show" }, { revalidate: 600 });
+      return pickList<JkcTheaterItem>(json, "theater", "data");
+    },
+    fallbackData: [],
+  });
+}
+
+/** Lineup for one show (`/api/theater/:id`), cached so the monthly quota is spared. */
+interface ShowMember {
+  id: string;
+  name?: string;
+  url_key: string;
+  img?: string;
+}
+
+async function fetchJkcShowMembers(id: string): Promise<ShowMember[]> {
+  return fetchWithCacheAndFallback<ShowMember[]>({
+    key: `jkc_theater_detail_${id}`,
+    ttlSeconds: 1800,
+    fetcher: async () => {
+      const json = await jkt48ConnectGet<JkcTheaterDetail>(`/api/theater/${encodeURIComponent(id)}`, {}, { revalidate: 1800 });
+      const members: JkcMember[] = json?.shows?.[0]?.members || [];
+      return members.map((m) => ({ id: String(m.id ?? ""), name: m.name, url_key: m.url_key || "", img: m.img }));
+    },
+    fallbackData: [],
+  });
+}
+
 async function fetchMonthTheater(monthStr: string, yearStr: string): Promise<any[]> {
   const cacheKey = `theater_${monthStr}_${yearStr}`;
   return fetchWithCacheAndFallback<any[]>({
     key: cacheKey,
     ttlSeconds: 600,
     fetcher: async () => {
-      // 1. Coba JKT48Connect
+      // 1. JKT48Connect (api.jkt48connect.app)
       try {
-        const apiUrl = `${BASE}/theater?month=${monthStr}&year=${yearStr}&priority_token=${API_KEY}`;
-        const res = await fetch(apiUrl, {
-          headers: {
-            "x-priority-token": API_KEY,
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
-          },
-          next: { revalidate: 600 },
-          signal: AbortSignal.timeout(5000),
+        const list = (await fetchJkcTheaterList()).filter((s) => {
+          const wib = toWib(s.start_date || s.date);
+          return wib && wib.date.slice(0, 7) === `${yearStr}-${monthStr}`;
         });
-        if (res.ok) {
-          const json = await res.json();
-          const list = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
-          if (list.length > 0) return list.map(normalizeShow);
+        if (list.length > 0) {
+          const masterMembers = new Map<string, ShowMember[]>(
+            getMasterShows().map((m) => [`${(m.title || "").trim().toLowerCase()}-${(m.date || "").slice(0, 10)}`, m.members || []])
+          );
+          // lineup only for the shows of this month, max 40 detail calls per refresh
+          const shows = await Promise.all(
+            list.slice(0, 40).map(async (s) => {
+              const id = String(s.id || s.url || "");
+              const start = s.start_date || s.date || "";
+              const wib = toWib(start);
+              let members = id ? await fetchJkcShowMembers(id) : [];
+              if (!members.length) {
+                members = masterMembers.get(`${(s.title || "").trim().toLowerCase()}-${String(start).slice(0, 10)}`) || [];
+              }
+              return normalizeShow({
+                id,
+                schedule_id: id,
+                title: s.title,
+                team: s.team,
+                date: start,
+                showDate: start,
+                startTime: wib?.time || "19:00",
+                start_time: `${wib?.time || "19:00"}:00`,
+                members,
+                url: id ? `https://jkt48.com/purchase/schedule/show?code=${encodeURIComponent(id)}` : undefined,
+              });
+            })
+          );
+          return shows;
         }
       } catch {}
 

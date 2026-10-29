@@ -58,8 +58,7 @@ function rowToEvent(row: any) {
 import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
 import { getMasterShows } from "../theater/route";
 
-const API_KEY = "sJbpVqLinYlp";
-const JKT48_BASE = "https://v5.jkt48connect.com/api/jkt48";
+import { jkt48ConnectGet, pickList, toWib, type JkcTheaterItem } from "@/lib/jkt48connect";
 
 async function fetchJkt48OfficialEvents(): Promise<any[]> {
   return fetchWithCacheAndFallback<any[]>({
@@ -67,30 +66,33 @@ async function fetchJkt48OfficialEvents(): Promise<any[]> {
     ttlSeconds: 300,
     fetcher: async () => {
       try {
-        const res = await fetch(`${JKT48_BASE}/theater?priority_token=${API_KEY}`, {
-          headers: {
-            "x-priority-token": API_KEY,
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
-          },
-          next: { revalidate: 300 },
-          signal: AbortSignal.timeout(6000),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const list = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
-          if (list.length > 0) {
-            return list.map((item: any, idx: number) => ({
-              id: `jkt48-${item.id || item.schedule_id || idx}`,
-              title: item.title || item.name || "Event JKT48",
-              date: item.date instanceof Date ? item.date.toISOString().slice(0, 10) : String(item.date || item.showDate || "").slice(0, 10),
-              startTime: (item.startTime || item.start_time || "19:00").slice(0, 5),
-              members: item.members || item.member || item.lineup || [{ name: "JKT48" }],
-              url: item.url || (item.link ? `https://jkt48.com/theater/schedule/id/${item.schedule_id || item.link}?lang=id` : "#"),
-              imageUrl: item.image_url || item.poster || item.banner || "",
+        // JKT48Connect (api.jkt48connect.app): theater shows + other official events
+        const [theaterJson, eventJson] = await Promise.all([
+          jkt48ConnectGet("/api/theater", { page: 1, perpage: 100, type: "show" }, { revalidate: 300 }),
+          jkt48ConnectGet("/api/jkt48event", { page: 1, perpage: 50 }, { revalidate: 300 }),
+        ]);
+        type Item = JkcTheaterItem & { _kind: "show" | "event" };
+        const shows: Item[] = pickList<JkcTheaterItem>(theaterJson, "theater", "data").map((item) => ({ ...item, _kind: "show" }));
+        const events: Item[] = pickList<JkcTheaterItem>(eventJson, "events", "data").map((item) => ({ ...item, _kind: "event" }));
+        const list = [...shows, ...events];
+        if (list.length > 0) {
+          return list.map((item, idx) => {
+            const wib = toWib(item.start_date || item.date);
+            const code = String(item.id || item.url || idx);
+            return {
+              id: `jkt48-${code}`,
+              title: item.title || (item._kind === "show" ? "Theater JKT48" : "Event JKT48"),
+              date: wib?.date || String(item.date || "").slice(0, 10),
+              startTime: wib?.time || "19:00",
+              members: item.team ? [{ name: `Team ${item.team}` }] : [{ name: "JKT48" }],
+              url:
+                item._kind === "show"
+                  ? `https://jkt48.com/purchase/schedule/show?code=${encodeURIComponent(code)}`
+                  : "https://jkt48.com/calendar/list?lang=id",
+              imageUrl: "",
               isOfficial: true,
-            }));
-          }
+            };
+          });
         }
       } catch (err) {
         console.warn("[Calendar API] Remote fetch failed, using fallback:", err);
@@ -151,7 +153,9 @@ export async function GET() {
     isTheater: true,
   }));
 
-  const merged = [...localData, ...officialEvents, ...masterShows];
+  // master shows go before the API list so a show keeps its full lineup
+  // (the JKT48Connect list has no members) when both describe the same show
+  const merged = [...localData, ...masterShows, ...officialEvents];
   const seen = new Set<string>();
   const unique = merged.filter((item: any) => {
     const key = `${(item.title || "").trim().toLowerCase()}-${(item.date || "").slice(0, 10)}-${(item.startTime || "").slice(0, 5)}`;

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
-
-const API_KEY = "sJbpVqLinYlp";
-const BASE = "https://v5.jkt48connect.com/api/jkt48";
+import { hasJkt48ConnectKey, jkt48ConnectGet, pickList } from "@/lib/jkt48connect";
 
 const ERINE_KEYS = ["erine", "catherina", "catherine", "vallencia", "valencia"];
 
@@ -30,6 +28,9 @@ interface LiveStream {
   streaming_url?: string;
   showId?: string | null;
   room_id?: number;
+  /** IDN list items carry the member under `user` */
+  user?: { name?: string; username?: string };
+  stream_url?: string;
 }
 
 export async function GET() {
@@ -39,32 +40,34 @@ export async function GET() {
       ttlSeconds: 45,
       allowEmptyOverwrite: true,
       fetcher: async () => {
-        const res = await fetch(`${BASE}/live?priority_token=${API_KEY}`, {
-          headers: {
-            "x-priority-token": API_KEY,
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
-          },
-          next: { revalidate: 60 },
-          signal: AbortSignal.timeout(5000),
-        });
-
-        if (!res.ok) throw new Error(`Failed: ${res.statusText}`);
-
-        const raw: LiveStream[] = await res.json();
-        const streams = Array.isArray(raw) ? raw : [];
+        if (!hasJkt48ConnectKey()) return [];
+        // Showroom + IDN sessions (api.jkt48connect.app); IDN list as extra source
+        const [nowLive, idnLives] = await Promise.all([
+          jkt48ConnectGet("/api/now_live", { group: "jkt48" }, { revalidate: 30, timeoutMs: 5000 }),
+          jkt48ConnectGet("/api/idn_lives", {}, { revalidate: 30, timeoutMs: 5000 }),
+        ]);
+        if (nowLive === null && idnLives === null) throw new Error("JKT48Connect live tidak tersedia");
+        const streams: LiveStream[] = [
+          ...pickList<LiveStream>(nowLive, "data", "lives"),
+          ...pickList<LiveStream>(idnLives, "data", "lives").map((s) => ({ ...s, type: s.type || "idn" })),
+        ];
 
         // Filter ONLY Erine (Catherina Vallencia)
-        const erineLives = streams.filter((s) =>
-          isErine(s.name ?? s.member_name ?? s.username ?? s.room_name ?? "")
-        );
+        const seen = new Set<string>();
+        const erineLives = streams.filter((s) => {
+          if (!isErine([s.name, s.member_name, s.username, s.room_name, s.url_key, s.user?.name, s.user?.username].filter(Boolean).join(" "))) return false;
+          const key = `${(s.type ?? s.platform ?? "").toLowerCase()}-${s.slug ?? s.url_key ?? s.user?.username ?? s.room_id ?? ""}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
 
         return erineLives.map((s) => {
           const name = "Catherina Vallencia (Erine)";
           const img = s.img ?? s.img_alt ?? s.image ?? s.avatar ?? "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
           const type = (s.type ?? s.platform ?? "idn").toLowerCase();
           const slug = s.slug ?? "";
-          const username = s.url_key ?? "jkt48_erine";
+          const username = s.url_key ?? s.user?.username ?? "jkt48_erine";
 
           const url = type.includes("showroom")
             ? (s.url_key ? `https://www.showroom-live.com/r/${s.url_key}` : "https://www.showroom-live.com/r/JKT48_Erine")
@@ -79,7 +82,7 @@ export async function GET() {
             url_key: username,
             slug,
             started_at: s.started_at ?? s.live_at ?? null,
-            streaming_url: s.streaming_url_list?.[0]?.url ?? s.streaming_url ?? null,
+            streaming_url: s.streaming_url_list?.[0]?.url ?? s.streaming_url ?? s.stream_url ?? null,
             url,
             is_erine: true,
           };

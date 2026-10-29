@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { query, isMySqlConfigured } from "@/lib/mysql";
 import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
 
-const JKT48_API_KEY = "sJbpVqLinYlp";
-const JKT48_BASE = "https://v5.jkt48connect.com/api/jkt48";
+import { jkt48ConnectGet, pickList } from "@/lib/jkt48connect";
 const CAVA_NEWS_URL = "https://v5.jkt48connect.com/api/cavallery/news?apikey=JKTCONNECT";
 
 // Judul berita JKT48 official yang disembunyikan dari tampilan (dikelola admin)
@@ -31,18 +30,9 @@ async function fetchJkt48OfficialNews(): Promise<any[]> {
     key: "jkt48_official_news",
     ttlSeconds: 120,
     fetcher: async () => {
-      const res = await fetch(`${JKT48_BASE}/news?priority_token=${JKT48_API_KEY}`, {
-        headers: {
-          "x-priority-token": JKT48_API_KEY,
-          Accept: "application/json",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CavalleryApp/1.0",
-        },
-        next: { revalidate: 180 },
-        signal: AbortSignal.timeout(4000),
-      });
-      if (!res.ok) return [];
-      const json = await res.json();
-      const list = Array.isArray(json.news) ? json.news : (Array.isArray(json.data) ? json.data : []);
+      // Official JKT48 news (api.jkt48connect.app)
+      const json = await jkt48ConnectGet("/api/news", { page: 1, perpage: 30 }, { revalidate: 180, timeoutMs: 5000 });
+      const list = pickList(json, "news", "data");
       return list
         .filter((n: any) => !isBlockedNews(n.title || ""))
         .map((n: any) => ({
