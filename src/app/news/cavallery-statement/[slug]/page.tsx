@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import styles from "../page.module.css";
 import { query, isMySqlConfigured } from "@/lib/mysql";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface NewsDetail {
   id: string;
   slug: string;
@@ -18,10 +21,11 @@ interface NewsDetail {
 
 async function getNewsDetail(slug: string): Promise<NewsDetail | null> {
   try {
+    const cleanSlug = decodeURIComponent(slug).trim();
     if (isMySqlConfigured()) {
       const rows = await query<any[]>(
-        "SELECT * FROM `news` WHERE `slug`=? OR `id`=? LIMIT 1",
-        [slug, slug]
+        "SELECT * FROM `news` WHERE LOWER(`slug`)=LOWER(?) OR `slug`=? OR `id`=? LIMIT 1",
+        [cleanSlug, cleanSlug, cleanSlug]
       );
       if (rows && rows.length > 0) {
         const r = rows[0];

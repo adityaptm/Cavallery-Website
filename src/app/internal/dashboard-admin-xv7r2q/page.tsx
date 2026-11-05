@@ -416,6 +416,16 @@ function DataTable({ cols, rows, onEdit, onDelete }: {
                 <td key={c.key} data-label={c.label}>{
                   typeof row[c.key] === "boolean" ? (row[c.key] ? "✓" : "✗") :
                   c.key === "image_url" && row[c.key] ? <img src={row[c.key]} alt="" className={styles.thumb} /> :
+                  c.key === "slug" && row[c.key] ? (
+                    <a
+                      href={`/news/cavallery-statement/${row[c.key]}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "var(--cv-orange)", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      {String(row[c.key])} <i className="bx bx-link-external" style={{ fontSize: "0.85em" }} />
+                    </a>
+                  ) :
                   Array.isArray(row[c.key]) ? row[c.key].join(", ").slice(0, 60) :
                   String(row[c.key] ?? "-").slice(0, 60)
                 }</td>
@@ -4510,7 +4520,31 @@ function SectionManager({ section }: { section: Section }) {
   };
 
   const cfg: Record<string, { endpoint: string; cols: { key: string; label: string }[]; fields: { key: string; label: string; type?: string; rows?: number; hint?: string }[]; listKey: string; }> = {
-    news: { endpoint: "/news", listKey: "news", cols: [{ key: "image_url", label: "Gambar" }, { key: "title", label: "Judul" }, { key: "label", label: "Label" }, { key: "is_active", label: "Aktif" }, { key: "published_at", label: "Tanggal" }], fields: [{ key: "slug", label: "Slug" }, { key: "title", label: "Judul" }, { key: "label", label: "Label" }, { key: "description", label: "Deskripsi Singkat", type: "textarea", rows: 2 }, { key: "content", label: "Konten Lengkap", type: "textarea", rows: 6 }, { key: "image_url", label: "URL Gambar Utama" }, { key: "images", label: "URL Gambar Dokumentasi", hint: "pisahkan dengan koma", type: "textarea", rows: 2 }, { key: "link_url", label: "Link URL" }, { key: "published_at", label: "Tanggal Publish", type: "datetime-local" }, { key: "is_active", label: "Aktif", type: "checkbox" }, { key: "is_pinned", label: "Pin", type: "checkbox" }] },
+    news: {
+      endpoint: "/news",
+      listKey: "news",
+      cols: [
+        { key: "image_url", label: "Gambar" },
+        { key: "title", label: "Judul" },
+        { key: "slug", label: "Slug URL (/news/cavallery-statement/[slug])" },
+        { key: "label", label: "Label" },
+        { key: "is_active", label: "Aktif" },
+        { key: "published_at", label: "Tanggal" }
+      ],
+      fields: [
+        { key: "title", label: "Judul Berita" },
+        { key: "slug", label: "Slug URL Berita", hint: "Contoh: resmi-pernyataan-sikap (Akan menjadi URL /news/cavallery-statement/[slug])" },
+        { key: "label", label: "Label / Kategori (cth: Statement, Resmi, Pengumuman)" },
+        { key: "author", label: "Penulis / Author (cth: Cavallery Staff)" },
+        { key: "description", label: "Deskripsi Singkat / Ringkasan", type: "textarea", rows: 2 },
+        { key: "content", label: "Konten Lengkap Berita", type: "textarea", rows: 6 },
+        { key: "image_url", label: "URL Gambar Utama" },
+        { key: "images", label: "URL Gambar Dokumentasi / Lampiran", hint: "pisahkan dengan koma jika lebih dari 1", type: "textarea", rows: 2 },
+        { key: "published_at", label: "Tanggal Publish", type: "datetime-local" },
+        { key: "is_active", label: "Aktif", type: "checkbox" },
+        { key: "is_pinned", label: "Pin ke Bagian Atas", type: "checkbox" }
+      ]
+    },
     timeline: { endpoint: "/timeline", listKey: "events", cols: [{ key: "year", label: "Tahun" }, { key: "date_label", label: "Tanggal" }, { key: "title", label: "Judul" }, { key: "is_active", label: "Aktif" }], fields: [{ key: "year", label: "Tahun" }, { key: "event_date", label: "Tanggal Event", type: "date" }, { key: "date_label", label: "Label Tanggal" }, { key: "title", label: "Judul" }, { key: "handwriting_caption", label: "Caption Polaroid" }, { key: "description", label: "Deskripsi", type: "textarea", rows: 3 }, { key: "image_url", label: "URL Gambar Polaroid" }, { key: "sort_order", label: "Urutan", type: "number" }, { key: "is_active", label: "Aktif", type: "checkbox" }] },
     gallery: { endpoint: "/gallery", listKey: "items", cols: [{ key: "image_url", label: "Gambar" }, { key: "title", label: "Judul" }, { key: "date_label", label: "Tanggal" }, { key: "is_active", label: "Aktif" }], fields: [{ key: "title", label: "Judul" }, { key: "image_url", label: "URL Gambar" }, { key: "date_label", label: "Label Tanggal" }, { key: "alt_text", label: "Alt Text" }, { key: "tags", label: "Tags", hint: "pisahkan dengan koma, boleh kosong" }, { key: "sort_order", label: "Urutan", type: "number" }, { key: "is_active", label: "Aktif", type: "checkbox" }] },
     setlists: { endpoint: "/setlists", listKey: "", cols: [{ key: "image_url", label: "Gambar" }, { key: "title", label: "Judul" }, { key: "date_range", label: "Periode" }, { key: "badge", label: "Badge" }, { key: "is_active", label: "Aktif" }], fields: [{ key: "title", label: "Judul" }, { key: "date_range", label: "Periode (cth: 1 Jan - Present)" }, { key: "badge", label: "Badge (cth: 3 Shows)" }, { key: "image_url", label: "URL Gambar" }, { key: "songs", label: "Songs", hint: "pisahkan dengan koma", type: "textarea", rows: 3 }, { key: "show_count", label: "Jumlah Show", type: "number" }, { key: "sort_order", label: "Urutan", type: "number" }, { key: "is_active", label: "Aktif", type: "checkbox" }] },
@@ -4535,7 +4569,8 @@ function SectionManager({ section }: { section: Section }) {
     if (["dashboard","media","discord","journal","tickets"].includes(section)) return;
     setLoading(true);
     try {
-      const res  = await fetch(api(c.endpoint));
+      const sep = c.endpoint.includes("?") ? "&" : "?";
+      const res  = await fetch(api(`${c.endpoint}${sep}_t=${Date.now()}`), { cache: "no-store" });
       const json = await res.json();
       const data = json?.data;
       if      (Array.isArray(data))            setRows(data);

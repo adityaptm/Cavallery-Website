@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { query, isMySqlConfigured } from "@/lib/mysql";
-import { API_CACHE_HEADERS, fetchWithCacheAndFallback } from "@/lib/apiCache";
+import { API_CACHE_HEADERS, fetchWithCacheAndFallback, invalidateApiCache } from "@/lib/apiCache";
+import { revalidatePath } from "next/cache";
 
 import { jkt48ConnectGet, pickList } from "@/lib/jkt48connect";
 const CAVA_NEWS_URL = "https://v5.jkt48connect.com/api/cavallery/news?apikey=JKTCONNECT";
+
+const NO_CACHE_HEADERS: Record<string, string> = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+  "CDN-Cache-Control": "no-store",
+};
 
 // Judul berita JKT48 official yang disembunyikan dari tampilan (dikelola admin)
 const BLOCKED_NEWS_TITLE_KEYWORDS = [
@@ -23,6 +29,32 @@ const BLOCKED_NEWS_TITLE_KEYWORDS = [
 function isBlockedNews(title: string): boolean {
   const t = title.toLowerCase();
   return BLOCKED_NEWS_TITLE_KEYWORDS.some((kw) => t.includes(kw.toLowerCase()));
+}
+
+export function formatSlug(rawSlug?: string, fallbackTitle?: string): string {
+  let s = (rawSlug || fallbackTitle || "").trim();
+  s = s.replace(/^https?:\/\/[^\/]+/i, "");
+  s = s.replace(/^\/?news\/cavallery-statement\//i, "");
+  s = s.replace(/^\/+/, "");
+  s = s
+    .toLowerCase()
+    .replace(/[^a-z0-9\-_\s]/g, "")
+    .trim()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return s || `statement-${Date.now()}`;
+}
+
+export function formatSqlDatetime(dateVal?: any): string {
+  if (!dateVal) {
+    return new Date().toISOString().slice(0, 19).replace("T", " ");
+  }
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) {
+    return new Date().toISOString().slice(0, 19).replace("T", " ");
+  }
+  return d.toISOString().slice(0, 19).replace("T", " ");
 }
 
 async function fetchJkt48OfficialNews(): Promise<any[]> {
@@ -59,14 +91,14 @@ async function fetchJkt48OfficialNews(): Promise<any[]> {
 async function fetchCavalleryFanbaseNews(): Promise<any[]> {
   return fetchWithCacheAndFallback<any[]>({
     key: "cavallery_fanbase_news",
-    ttlSeconds: 120,
+    ttlSeconds: 60,
     fetcher: async () => {
       const res = await fetch(CAVA_NEWS_URL, {
         headers: {
           Accept: "application/json",
           "User-Agent": "Mozilla/5.0 CavalleryApp/1.0",
         },
-        next: { revalidate: 180 },
+        next: { revalidate: 60 },
         signal: AbortSignal.timeout(4000),
       });
       if (res.ok) {
@@ -85,6 +117,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || searchParams.get("category");
+    const hasCacheBuster = searchParams.has("_t") || searchParams.has("v");
 
     let dbNews: any[] = [];
     if (type !== "jkt48") {
@@ -92,24 +125,30 @@ export async function GET(request: Request) {
         try {
           const rows = await query<any[]>("SELECT * FROM `news` ORDER BY `published_at` DESC, `id` DESC");
           if (rows && Array.isArray(rows) && rows.length > 0) {
-            dbNews = rows.map((r) => ({
-              id: String(r.id),
-              slug: r.slug || `statement-${r.id}`,
-              title: r.title || "",
-              label: r.category || r.label || "Statement",
-              category: r.category || r.label || "Statement",
-              date: r.published_at ? new Date(r.published_at).toISOString() : new Date().toISOString(),
-              published_at: r.published_at ? new Date(r.published_at).toISOString() : new Date().toISOString(),
-              description: r.summary || r.description || r.content?.slice(0, 140) || "",
-              content: r.content || "",
-              image_url: r.image_url || "/images/cava-logo.jpg",
-              background_image: r.image_url || "/images/cava-logo.jpg",
-              link_url: `/news/cavallery-statement/${r.slug || r.id}`,
-              url: `/news/cavallery-statement/${r.slug || r.id}`,
-              is_pinned: Boolean(r.is_pinned),
-              is_active: r.is_active !== undefined ? Boolean(r.is_active) : true,
-              is_internal: true,
-            }));
+            dbNews = rows.map((r) => {
+              const pubDate = r.published_at ? new Date(r.published_at) : new Date();
+              const validDate = !isNaN(pubDate.getTime()) ? pubDate : new Date();
+              return {
+                id: String(r.id),
+                slug: r.slug || `statement-${r.id}`,
+                title: r.title || "",
+                label: r.category || r.label || "Statement",
+                category: r.category || r.label || "Statement",
+                author: r.author || "Cavallery Staff",
+                date: validDate.toISOString(),
+                published_at: validDate.toISOString().slice(0, 16),
+                description: r.summary || r.description || r.content?.slice(0, 140) || "",
+                content: r.content || "",
+                image_url: r.image_url || "/images/cava-logo.jpg",
+                background_image: r.image_url || "/images/cava-logo.jpg",
+                images: r.images || "",
+                link_url: `/news/cavallery-statement/${r.slug || r.id}`,
+                url: `/news/cavallery-statement/${r.slug || r.id}`,
+                is_pinned: Boolean(r.is_pinned),
+                is_active: r.is_active !== undefined ? Boolean(r.is_active) : true,
+                is_internal: true,
+              };
+            });
           }
         } catch (e) {
           console.error("DB news fetch error:", e);
@@ -124,6 +163,7 @@ export async function GET(request: Request) {
             ...n,
             label: n.label || n.category || "Statement",
             category: n.category || n.label || "Statement",
+            author: n.author || "Cavallery Staff",
             date: n.published_at || n.date || new Date().toISOString(),
             published_at: n.published_at || n.date || new Date().toISOString(),
             link_url: n.link_url || `/news/cavallery-statement/${n.slug || n.id}`,
@@ -143,7 +183,7 @@ export async function GET(request: Request) {
           success: true,
           data: { news: dbNews },
         },
-        { headers: API_CACHE_HEADERS }
+        { headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -156,7 +196,7 @@ export async function GET(request: Request) {
           success: true,
           data: { news: officialNews },
         },
-        { headers: API_CACHE_HEADERS }
+        { headers: hasCacheBuster ? NO_CACHE_HEADERS : API_CACHE_HEADERS }
       );
     }
 
@@ -169,7 +209,7 @@ export async function GET(request: Request) {
         success: true,
         data: { news: merged },
       },
-      { headers: API_CACHE_HEADERS }
+      { headers: hasCacheBuster ? NO_CACHE_HEADERS : API_CACHE_HEADERS }
     );
   } catch (error: any) {
     console.error("News API Error:", error);
@@ -180,7 +220,7 @@ export async function GET(request: Request) {
         success: true,
         data: { news: officialNews },
       },
-      { headers: API_CACHE_HEADERS }
+      { headers: NO_CACHE_HEADERS }
     );
   }
 }
@@ -190,21 +230,44 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
 
+    const slug = formatSlug(body.slug, body.title || `news-${Date.now()}`);
+    const pubDate = formatSqlDatetime(body.published_at);
+
     const result: any = await query(
       "INSERT INTO `news` (`title`, `slug`, `summary`, `content`, `image_url`, `author`, `category`, `published_at`, `is_active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         body.title || "",
-        body.slug || `news-${Date.now()}`,
+        slug,
         body.description || body.summary || "",
         body.content || body.description || "",
         body.image_url || "",
-        body.author || "Cavallery",
+        body.author || "Cavallery Staff",
         body.label || body.category || "Statement",
-        body.published_at || new Date().toISOString(),
+        pubDate,
         body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1
       ]
     );
-    return NextResponse.json({ status: true, success: true, id: result.insertId, message: "News berhasil ditambahkan" });
+
+    // Immediate realtime cache invalidation
+    invalidateApiCache("cavallery_fanbase_news");
+    invalidateApiCache("jkt48_official_news");
+
+    try {
+      revalidatePath("/news");
+      revalidatePath(`/news/cavallery-statement/${slug}`);
+      revalidatePath("/news/cavallery-statement/[slug]", "page");
+    } catch {}
+
+    return NextResponse.json(
+      {
+        status: true,
+        success: true,
+        id: result?.insertId,
+        slug,
+        message: "News berhasil ditambahkan"
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error: any) {
     return NextResponse.json({ status: false, success: false, message: error.message }, { status: 500 });
   }
