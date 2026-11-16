@@ -1,7 +1,6 @@
-// Service Worker untuk PWA Cavallery
-const CACHE_NAME = "cavallery-pwa-v1";
+// Service Worker untuk PWA Cavallery (v2 - Anti Stale Cache)
+const CACHE_NAME = "cavallery-pwa-v2";
 const STATIC_ASSETS = [
-  "/",
   "/manifest.json",
   "/images/cava-logo-round.png",
   "/favicon.ico"
@@ -30,13 +29,19 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Hanya tangani GET request, abaikan API & auth requests
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_next/data/")) {
+
+  // Jangan sentuh API, admin, data Next, atau WebSocket
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/_next/data/") ||
+    url.pathname.startsWith("/internal/")
+  ) {
     return;
   }
 
+  // Network-First untuk semua halaman dan aset Next.js agar CSS selalu update
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -45,10 +50,7 @@ self.addEventListener("fetch", (event) => {
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
-        if (event.request.mode === "navigate") {
-          return caches.match("/");
-        }
-        return new Response("Offline", { status: 503, statusText: "Service Unavailable" });
+        return new Response("Offline", { status: 503, statusText: "Offline" });
       })
   );
 });

@@ -6,14 +6,13 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
-import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { useGSAP } from "@gsap/react";
 
 let registered = false;
 
 export function registerGSAP() {
   if (registered || typeof window === "undefined") return;
-  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, DrawSVGPlugin, useGSAP);
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, useGSAP);
   gsap.defaults({ ease: "power3.out", duration: 0.8 });
   ScrollTrigger.config({ ignoreMobileResize: true });
   registered = true;
@@ -97,4 +96,4 @@ export function refreshOnImages(root: ParentNode | null | undefined): () => void
   };
 }
 
-export { gsap, ScrollTrigger, MotionPathPlugin, DrawSVGPlugin, useGSAP };
+export { gsap, ScrollTrigger, MotionPathPlugin, useGSAP };

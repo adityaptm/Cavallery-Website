@@ -1016,8 +1016,52 @@
 
 
 
+@media (max-width: 640px) {
+  .modalOverlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modalContent {
+    max-height: 94vh;
+    border-radius: 18px 18px 12px 12px;
+    width: 100%;
+  }
+
+  .modalHeader {
+    padding: 1.2rem 1.1rem;
+    gap: 10px;
+  }
+
+  .modalIconCircle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .modalTitle {
+    font-size: 1.1rem;
+  }
+
+  .form {
+    padding: 1.2rem 1.1rem;
+    gap: 1rem;
+  }
+
+  /* Cegah auto-zoom iOS Safari saat focus input */
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px !important;
+  }
+}
+
 @media (max-width: 480px) {
+  .hero {
+    padding: 3rem 1rem 2rem;
+  }
   .heroTitle { font-size: 1.8rem; }
   .stepperLabel { display: none; }
   .stepperBar { gap: 4px; }
+  .content { padding: 0 1rem; }
 }

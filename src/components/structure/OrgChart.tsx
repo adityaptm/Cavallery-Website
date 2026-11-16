@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import Image from "next/image";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import styles from "./OrgChart.module.css";
 import {
   StructureNode,
@@ -17,21 +16,8 @@ import {
 } from "@/lib/structure";
 
 // Font serif untuk judul & sans-serif untuk kartu
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-cormorant",
-  display: "swap",
-  fallback: ["Playfair Display", "Georgia", "serif"],
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-dm-sans",
-  display: "swap",
-  fallback: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
-});
+const cormorant = { variable: "" };
+const dmSans = { variable: "" };
 
 export interface OrgChartProps {
   initialData?: {

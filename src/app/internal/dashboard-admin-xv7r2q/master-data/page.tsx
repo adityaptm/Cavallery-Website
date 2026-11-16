@@ -735,6 +735,45 @@ export default function AdminMasterDataPage() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* ── MASTER REKRUTMEN & FORM PERTANYAAN JOIN ── */}
+            <div
+              className={styles.sectionCard}
+              style={{
+                border: "2px solid color-mix(in srgb, #ff6b1a 50%, transparent)",
+                background: "color-mix(in srgb, #ff6b1a 8%, var(--cv-ink-2))",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+              }}
+            >
+              <div className={styles.sectionHeader} style={{ marginBottom: 14 }}>
+                <div>
+                  <h2 className={styles.sectionTitle} style={{ color: "var(--cv-orange, #ff6b1a)", fontSize: "1.25rem" }}>
+                    <i className="bx bx-slider-alt" style={{ color: "var(--cv-orange, #ff6b1a)", fontSize: "1.4rem" }} />
+                    Master Pertanyaan &amp; Rekrutmen Form Join (/join)
+                  </h2>
+                  <p style={{ fontSize: "0.82rem", color: "var(--fg-muted)", marginTop: 2 }}>
+                    Kelola formulir pendaftaran dinamis: tambah pertanyaan baru, pilih tipe input (teks, pilihan, upload), atur urutan pertanyaan, dan unduh data jawaban pendaftar.
+                  </p>
+                </div>
+                <Link
+                  href="/internal/dashboard-admin-xv7r2q?tab=recruitment"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 16px",
+                    borderRadius: 10,
+                    background: "var(--cv-orange)",
+                    color: "var(--cv-on-orange)",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  <i className="bx bx-edit" /> Kelola Rekrutmen &amp; Pertanyaan
+                </Link>
+              </div>
+            </div>
+
             {/* ── 0. KELOLA INFORMASI & BANNER HOME (OPEN MEMBER / MEET N GREET / EVENT) ── */}
             <div
               className={styles.sectionCard}
