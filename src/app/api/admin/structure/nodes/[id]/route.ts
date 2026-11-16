@@ -68,6 +68,7 @@ export async function PATCH(
       role_label: body.role_label,
       person_name: body.person_name,
       accent_color: body.accent_color,
+      avatar_url: body.avatar_url !== undefined ? (body.avatar_url ? String(body.avatar_url).trim() : null) : undefined,
       placement: body.placement as Placement,
       sort_order: body.sort_order !== undefined ? Number(body.sort_order) : undefined,
       is_active: body.is_active,

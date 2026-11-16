@@ -731,31 +731,81 @@ export default function OrgChart({ initialData, refreshKey = 0 }: OrgChartProps)
                         d={`M 10 0 L ${c.w - 10} 0 Q ${c.w} 0 ${c.w} 10 L ${c.w} 4 L 0 4 L 0 10 Q 0 0 10 0 Z`}
                         fill="#8c5a43"
                       />
-                      {/* Role Label */}
-                      <text
-                        x={c.w / 2}
-                        y={24}
-                        textAnchor="middle"
-                        fontFamily="var(--font-dm-sans), sans-serif"
-                        fontSize="10.5px"
-                        fontWeight="700"
-                        letterSpacing="1.8px"
-                        fill="#8c5a43"
-                      >
-                        {c.node.role_label.toUpperCase()}
-                      </text>
-                      {/* Person Name */}
-                      <text
-                        x={c.w / 2}
-                        y={48}
-                        textAnchor="middle"
-                        fontFamily="var(--font-cormorant), 'Playfair Display', serif"
-                        fontSize="16.5px"
-                        fontWeight="700"
-                        fill="var(--chart-text)"
-                      >
-                        {c.node.person_name || ""}
-                      </text>
+                      {c.node.avatar_url ? (
+                        <>
+                          <clipPath id={`avatar-clip-${c.id}`}>
+                            <circle cx="36" cy={c.h / 2} r="18" />
+                          </clipPath>
+                          <image
+                            href={c.node.avatar_url}
+                            x="18"
+                            y={c.h / 2 - 18}
+                            width="36"
+                            height="36"
+                            clipPath={`url(#avatar-clip-${c.id})`}
+                            preserveAspectRatio="xMidYMid slice"
+                          />
+                          <circle
+                            cx="36"
+                            cy={c.h / 2}
+                            r="18"
+                            fill="none"
+                            stroke="#8c5a43"
+                            strokeWidth="2"
+                          />
+                          {/* Role Label */}
+                          <text
+                            x="66"
+                            y={27}
+                            fontFamily="var(--font-dm-sans), sans-serif"
+                            fontSize="10px"
+                            fontWeight="700"
+                            letterSpacing="1.5px"
+                            fill="#8c5a43"
+                          >
+                            {c.node.role_label.toUpperCase()}
+                          </text>
+                          {/* Person Name */}
+                          <text
+                            x="66"
+                            y={49}
+                            fontFamily="var(--font-cormorant), 'Playfair Display', serif"
+                            fontSize="16px"
+                            fontWeight="700"
+                            fill="var(--chart-text)"
+                          >
+                            {c.node.person_name || ""}
+                          </text>
+                        </>
+                      ) : (
+                        <>
+                          {/* Role Label */}
+                          <text
+                            x={c.w / 2}
+                            y={24}
+                            textAnchor="middle"
+                            fontFamily="var(--font-dm-sans), sans-serif"
+                            fontSize="10.5px"
+                            fontWeight="700"
+                            letterSpacing="1.8px"
+                            fill="#8c5a43"
+                          >
+                            {c.node.role_label.toUpperCase()}
+                          </text>
+                          {/* Person Name */}
+                          <text
+                            x={c.w / 2}
+                            y={48}
+                            textAnchor="middle"
+                            fontFamily="var(--font-cormorant), 'Playfair Display', serif"
+                            fontSize="16.5px"
+                            fontWeight="700"
+                            fill="var(--chart-text)"
+                          >
+                            {c.node.person_name || ""}
+                          </text>
+                        </>
+                      )}
                     </g>
                   );
                 }
@@ -902,24 +952,51 @@ export default function OrgChart({ initialData, refreshKey = 0 }: OrgChartProps)
                       fill={c.accentColor}
                     />
 
-                    {/* Lingkaran inisial */}
-                    <circle
-                      cx="25"
-                      cy={c.h / 2}
-                      r="13"
-                      fill={`color-mix(in srgb, ${c.accentColor} 16%, transparent)`}
-                    />
-                    <text
-                      x="25"
-                      y={c.h / 2 + 4}
-                      textAnchor="middle"
-                      fontFamily="var(--font-dm-sans), sans-serif"
-                      fontSize="10px"
-                      fontWeight="700"
-                      fill={c.accentColor}
-                    >
-                      {initials || "•"}
-                    </text>
+                    {/* Lingkaran inisial atau Foto Profil */}
+                    {c.node.avatar_url ? (
+                      <g>
+                        <clipPath id={`avatar-clip-${c.id}`}>
+                          <circle cx="25" cy={c.h / 2} r="13" />
+                        </clipPath>
+                        <image
+                          href={c.node.avatar_url}
+                          x="12"
+                          y={c.h / 2 - 13}
+                          width="26"
+                          height="26"
+                          clipPath={`url(#avatar-clip-${c.id})`}
+                          preserveAspectRatio="xMidYMid slice"
+                        />
+                        <circle
+                          cx="25"
+                          cy={c.h / 2}
+                          r="13"
+                          fill="none"
+                          stroke={c.accentColor}
+                          strokeWidth="1.5"
+                        />
+                      </g>
+                    ) : (
+                      <>
+                        <circle
+                          cx="25"
+                          cy={c.h / 2}
+                          r="13"
+                          fill={`color-mix(in srgb, ${c.accentColor} 16%, transparent)`}
+                        />
+                        <text
+                          x="25"
+                          y={c.h / 2 + 4}
+                          textAnchor="middle"
+                          fontFamily="var(--font-dm-sans), sans-serif"
+                          fontSize="10px"
+                          fontWeight="700"
+                          fill={c.accentColor}
+                        >
+                          {initials || "•"}
+                        </text>
+                      </>
+                    )}
 
                     {/* Teks Jabatan & Nama */}
                     {hasPerson ? (

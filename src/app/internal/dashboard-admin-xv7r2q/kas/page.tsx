@@ -1675,9 +1675,10 @@ export default function AdminKasPage() {
                   <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                     <tr>
                       <th className={styles.colStickyNo} style={{ background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>No.</th>
-                      <th className={styles.colStickyNoAnggota} style={{ background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Nomor Anggota</th>
+                      <th className={styles.colStickyNoAnggota} style={{ minWidth: 125, background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Nomor Anggota</th>
                       <th className={styles.colStickyNama} style={{ background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Nama</th>
-                      <th style={{ minWidth: 100, background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Kas</th>
+                      <th style={{ minWidth: 95, background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Kas</th>
+                      <th style={{ minWidth: 95, background: "var(--cv-ink-1, #161311)", color: "#f87171", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Belum Lunas</th>
                       <th style={{ width: 75, background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>Bulan Mulai</th>
                       {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                         <th key={m} style={{ minWidth: 46, background: "var(--cv-ink-1, #161311)", color: "var(--fg)", borderBottom: "2px solid rgba(59, 130, 246, 0.5)" }}>
@@ -1696,7 +1697,21 @@ export default function AdminKasPage() {
                           {idx + 1}
                         </td>
                         <td className={styles.colStickyNoAnggota}>
-                          <span className={styles.noAnggota} style={{ fontSize: "0.78rem" }}>{row.noAnggota}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            {row.fotoProfil ? (
+                              <img
+                                src={row.fotoProfil}
+                                alt=""
+                                style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,255,255,0.15)" }}
+                                onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                              />
+                            ) : (
+                              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.62rem", color: "var(--fg-muted)", flexShrink: 0 }}>
+                                <i className="bx bx-user" />
+                              </div>
+                            )}
+                            <span className={styles.noAnggota} style={{ fontSize: "0.78rem" }}>{row.noAnggota}</span>
+                          </div>
                         </td>
                         <td className={styles.colStickyNama}>
                           <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{row.nama}</div>
@@ -1708,6 +1723,15 @@ export default function AdminKasPage() {
                         </td>
                         <td style={{ fontWeight: 800, fontSize: "0.85rem", color: row.isAdminRole ? "var(--fg-muted)" : row.totalKas > 0 ? "#10b981" : "var(--fg-muted)" }}>
                           {row.isAdminRole ? "-" : row.totalKas > 0 ? formatRupiah(row.totalKas) : "Rp -"}
+                        </td>
+                        <td style={{ fontWeight: 800, fontSize: "0.85rem" }}>
+                          {row.isAdminRole ? (
+                            <span style={{ color: "var(--fg-muted)" }}>-</span>
+                          ) : (row.totalBelumLunas ?? 0) > 0 ? (
+                            <span style={{ color: "#ef4444" }} title={`${row.unpaidCount || 0} bulan belum bayar`}>{formatRupiah(row.totalBelumLunas)}</span>
+                          ) : (
+                            <span style={{ color: "#10b981", fontSize: "0.75rem" }}>Lunas</span>
+                          )}
                         </td>
                         <td style={{ color: "var(--fg-muted)", fontWeight: 700, textAlign: "center", fontSize: "0.82rem" }}>
                           {typeof row.bulanMulai === "number" && row.bulanMulai >= 1 && row.bulanMulai <= 12

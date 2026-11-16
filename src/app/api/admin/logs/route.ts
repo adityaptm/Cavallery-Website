@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query, isMySqlConfigured } from "@/lib/mysql";
 import { getFallbackActivityLogs, getFallbackLoginLogs, logActivity } from "@/lib/logger";
+import { getAdminSessionFromReq } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -40,12 +41,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, type = "activity", ids, module = "Dashboard", details, actionName = "Edit Data", username = "unknown" } = body;
+    const session = getAdminSessionFromReq(req);
+    const { action, type = "activity", ids, module = "Dashboard", details, actionName = "Edit Data" } = body;
+    const resolvedUsername =
+      (body.username && body.username !== "unknown" ? String(body.username).trim() : "") ||
+      session?.username ||
+      session?.nama ||
+      "Admin";
 
     // 0. LOG ACTIVITY FROM DASHBOARD
     if (action === "log_activity") {
       await logActivity({
-        username,
+        username: resolvedUsername,
         action: actionName,
         module,
         details,
@@ -67,7 +74,7 @@ export async function POST(req: NextRequest) {
           await query(`DELETE FROM ${tableName} WHERE id IN (${placeholders})`, ids);
 
           await logActivity({
-            username: username || "admin",
+            username: resolvedUsername,
             action: "Hapus Log",
             module: type === "login" ? "Riwayat Login" : "Riwayat Aktivitas",
             details: `Menghapus ${ids.length} entri log`,
@@ -97,7 +104,7 @@ export async function POST(req: NextRequest) {
           await query(`TRUNCATE TABLE ${tableName}`);
 
           await logActivity({
-            username: username || "admin",
+            username: resolvedUsername,
             action: "Bersihkan Semua Log",
             module: type === "login" ? "Riwayat Login" : "Riwayat Aktivitas",
             details: `Membersihkan seluruh tabel log ${tableName}`,

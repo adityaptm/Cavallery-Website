@@ -15,6 +15,7 @@ function proxyImg(url: string): string {
 
 interface NewsItem {
   id: string;
+  slug?: string;
   title: string;
   label: string;
   date: string;
@@ -35,29 +36,36 @@ export default function NewsPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch(`/api/news?type=cavallery&v=${Date.now()}`).then((r) => r.json()).catch(() => ({ data: { news: [] } })),
-      fetch(`/api/news?type=jkt48&v=${Date.now()}`).then((r) => r.json()).catch(() => ({ data: { news: [] } })),
+      fetch(`/api/news?type=cavallery&v=${Date.now()}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => ({ data: { news: [] } })),
+      fetch(`/api/news?type=jkt48&v=${Date.now()}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => ({ data: { news: [] } })),
     ]).then(([cavData, jktData]) => {
-      const mapItem = (n: any): NewsItem => ({
+      const mapItem = (n: any, isCav: boolean): NewsItem => ({
         id: String(n.id || Math.random()),
+        slug: n.slug || "",
         title: n.title || "",
-        label: n.label || n.category || "Berita",
+        label: n.label || n.category || (isCav ? "Statement" : "Official JKT48"),
         date: n.date || n.published_at || new Date().toISOString(),
-        link_url: n.link_url || n.url || "#",
+        link_url: n.link_url || (n.slug ? `/news/cavallery-statement/${encodeURIComponent(n.slug)}` : n.url || "#"),
         image_url: n.image_url || n.background_image || DEFAULT_IMG,
         description: n.description || n.summary || undefined,
-        is_internal: !!n.is_internal,
+        is_internal: isCav,
       });
-      setCavNews((cavData?.data?.news ?? []).map(mapItem));
-      setJktNews((jktData?.data?.news ?? []).map(mapItem));
+
+      setCavNews((cavData?.data?.news ?? []).map((n: any) => mapItem(n, true)));
+      setJktNews((jktData?.data?.news ?? []).map((n: any) => mapItem(n, false)));
       setLoading(false);
     });
   }, []);
 
-  const allNews: NewsItem[] = [
-    ...cavNews.map((n) => ({ ...n, label: "Cavallery" })),
-    ...jktNews,
-  ];
+  const allNews: NewsItem[] = [...cavNews, ...jktNews].sort((a, b) => {
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    return timeB - timeA;
+  });
 
   const displayed = tab === "cavallery" ? cavNews : tab === "jkt48" ? jktNews : allNews;
 
@@ -66,8 +74,13 @@ export default function NewsPage() {
     const imgSrc = imgError || !item.image_url ? DEFAULT_IMG : proxyImg(item.image_url);
     return (
       <div className={styles.imgWrap}>
-        <img src={imgSrc} alt={item.title} loading="lazy" onError={() => setImgError(true)} />
-        <div className={styles.labelBadge}>{item.label || "Terkini"}</div>
+        <img
+          src={imgSrc}
+          alt={item.title}
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
+        <div className={styles.labelBadge}>{item.label || "Statement"}</div>
       </div>
     );
   };
@@ -115,11 +128,11 @@ export default function NewsPage() {
             onClick={() => setTab(t)}
           >
             {t === "all" ? (
-              <><i className="bx bx-globe" /> Semua</>
+              <><i className="bx bx-globe" /> Semua ({allNews.length})</>
             ) : t === "cavallery" ? (
-              <><i className="bx bx-star" /> Cavallery</>
+              <><i className="bx bx-star" /> Cavallery ({cavNews.length})</>
             ) : (
-              <><i className="bx bx-news" /> JKT48</>
+              <><i className="bx bx-news" /> JKT48 ({jktNews.length})</>
             )}
           </button>
         ))}

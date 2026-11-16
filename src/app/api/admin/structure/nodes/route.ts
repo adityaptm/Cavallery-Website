@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
 
     const placement: Placement = body.placement === "below" ? "below" : "normal";
     const person_name = body.person_name ? String(body.person_name).trim() : null;
+    const avatar_url = body.avatar_url ? String(body.avatar_url).trim() : null;
     const is_active = body.is_active !== undefined ? (body.is_active ? 1 : 0) : 1;
     const sort_order = body.sort_order !== undefined ? Number(body.sort_order) : undefined;
 
@@ -98,6 +99,7 @@ export async function POST(req: NextRequest) {
       role_label,
       person_name,
       accent_color,
+      avatar_url,
       sort_order,
       is_active,
     });

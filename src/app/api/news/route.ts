@@ -36,6 +36,9 @@ export function formatSlug(rawSlug?: string, fallbackTitle?: string): string {
   s = s.replace(/^https?:\/\/[^\/]+/i, "");
   s = s.replace(/^\/?news\/cavallery-statement\//i, "");
   s = s.replace(/^\/+/, "");
+  if (rawSlug && rawSlug.trim()) {
+    return rawSlug.trim().replace(/^\/+|\/+$/g, "");
+  }
   s = s
     .toLowerCase()
     .replace(/[^a-z0-9\-_\s]/g, "")
@@ -253,6 +256,7 @@ export async function POST(request: Request) {
     invalidateApiCache("jkt48_official_news");
 
     try {
+      revalidatePath("/");
       revalidatePath("/news");
       revalidatePath(`/news/cavallery-statement/${slug}`);
       revalidatePath("/news/cavallery-statement/[slug]", "page");

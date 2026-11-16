@@ -24,7 +24,7 @@ type Section =
   | "kabesha"   | "media"       | "discord"  | "journal"
   | "bot"       | "botmedia"    | "linechat"   | "tickets"  | "calendar" | "updates" 
   | "vcschedule"| "abouterine"  | "anggotakota" | "merch" | "invitations" | "fanart" | "twoshot" | "dengerine"
-  | "users"     | "activitylogs"| "loginlogs"   | "visitorlocations";
+  | "users"     | "trash"       | "activitylogs"| "loginlogs"   | "visitorlocations";
 
 
 // ─── ACTIVITY LOGGING HELPER ─────────────────────────────────
@@ -395,21 +395,25 @@ function ConfirmModal({ msg, onConfirm, onCancel }: { msg: string; onConfirm: ()
 }
 
 // ─── GENERIC TABLE ────────────────────────────────────────────
-function DataTable({ cols, rows, onEdit, onDelete }: {
+function DataTable({ cols, rows, onEdit, onDelete, readOnly }: {
   cols: { key: string; label: string }[];
   rows: any[];
   onEdit: (row: any) => void;
   onDelete: (row: any) => void;
+  readOnly?: boolean;
 }) {
   return (
     <div className={styles.tableWrap}>
       <table className={`${styles.table} ${styles.responsiveTable}`}>
         <thead>
-          <tr>{cols.map(c => <th key={c.key}>{c.label}</th>)}<th>Aksi</th></tr>
+          <tr>
+            {cols.map(c => <th key={c.key}>{c.label}</th>)}
+            {!readOnly && <th>Aksi</th>}
+          </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
-            <tr><td colSpan={cols.length + 1} className={styles.empty}><i className="bx bx-inbox" /> Tidak ada data</td></tr>
+            <tr><td colSpan={cols.length + (readOnly ? 0 : 1)} className={styles.empty}><i className="bx bx-inbox" /> Tidak ada data</td></tr>
           ) : rows.map((row, i) => (
             <tr key={row.id ?? row.stat_key ?? i}>
               {cols.map(c => (
@@ -426,16 +430,28 @@ function DataTable({ cols, rows, onEdit, onDelete }: {
                       {String(row[c.key])} <i className="bx bx-link-external" style={{ fontSize: "0.85em" }} />
                     </a>
                   ) :
+                  c.key === "link_url" && row[c.key] ? (
+                    <a
+                      href={row[c.key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "var(--cv-orange)", textDecoration: "underline", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      Buka Web <i className="bx bx-link-external" style={{ fontSize: "0.85em" }} />
+                    </a>
+                  ) :
                   Array.isArray(row[c.key]) ? row[c.key].join(", ").slice(0, 60) :
                   String(row[c.key] ?? "-").slice(0, 60)
                 }</td>
               ))}
-              <td data-label="Aksi">
-                <div className={styles.actionBtns}>
-                  <button className={styles.btnEdit} onClick={() => onEdit(row)}><i className="bx bx-edit" /></button>
-                  <button className={styles.btnDel}  onClick={() => onDelete(row)}><i className="bx bx-trash" /></button>
-                </div>
-              </td>
+              {!readOnly && (
+                <td data-label="Aksi">
+                  <div className={styles.actionBtns}>
+                    <button className={styles.btnEdit} onClick={() => onEdit(row)}><i className="bx bx-edit" /></button>
+                    <button className={styles.btnDel}  onClick={() => onDelete(row)}><i className="bx bx-trash" /></button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -4451,6 +4467,7 @@ function SectionManager({ section }: { section: Section }) {
   const [stats, setStats] = useState<Record<string, any>>({});
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsSaving, setStatsSaving] = useState(false);
+  const [newsTab, setNewsTab]   = useState<"cavallery" | "jkt48">("cavallery");
 
   const showToast = (msg: string, type: "success" | "error") => setToast({ msg, type });
 
@@ -4565,12 +4582,23 @@ function SectionManager({ section }: { section: Section }) {
 
   const c = cfg[section] || { endpoint: "", listKey: "", cols: [], fields: [] };
 
+  const jkt48Cols = [
+    { key: "image_url", label: "Gambar" },
+    { key: "title", label: "Judul" },
+    { key: "label", label: "Kategori" },
+    { key: "link_url", label: "Link Web" },
+    { key: "published_at", label: "Tanggal" },
+  ];
+
   const load = useCallback(async () => {
     if (["dashboard","media","discord","journal","tickets"].includes(section)) return;
     setLoading(true);
     try {
-      const sep = c.endpoint.includes("?") ? "&" : "?";
-      const res  = await fetch(api(`${c.endpoint}${sep}_t=${Date.now()}`), { cache: "no-store" });
+      let fetchUrl = api(`${c.endpoint}${c.endpoint.includes("?") ? "&" : "?"}_t=${Date.now()}`);
+      if (section === "news") {
+        fetchUrl = api(`${c.endpoint}?type=${newsTab}&_t=${Date.now()}`);
+      }
+      const res  = await fetch(fetchUrl, { cache: "no-store" });
       const json = await res.json();
       const data = json?.data;
       if      (Array.isArray(data))            setRows(data);
@@ -4582,7 +4610,7 @@ function SectionManager({ section }: { section: Section }) {
       else                                     setRows([]);
     } catch { setRows([]); }
     setLoading(false);
-  }, [section]);
+  }, [section, newsTab, c.endpoint, c.listKey]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -4599,10 +4627,12 @@ function SectionManager({ section }: { section: Section }) {
       const json   = await res.json();
       if (json.status) {
         showToast(isEdit ? "Berhasil diperbarui!" : "Berhasil ditambahkan!", "success");
+        const itemLabel = formData.title || formData.label || formData.name || formData.slug || editId || "Item";
         recordDashboardActivity(
           isEdit ? "Edit Data" : "Tambah Data",
           section.toUpperCase(),
-          `${isEdit ? "Memperbarui" : "Menambahkan"} item di modul ${section}`
+          `${isEdit ? "Memperbarui" : "Menambahkan"} item "${itemLabel}" di modul ${section}`,
+          currentAdminUsername
         );
         setModal(null);
         load();
@@ -4616,14 +4646,35 @@ function SectionManager({ section }: { section: Section }) {
     setConfirm(null);
     try {
       const id  = section === "stats" ? row.stat_key : section === "youtube" ? row.video_id : row.id;
+      const itemLabel = row.title || row.label || row.name || row.slug || id || "Item";
+
+      // Pindahkan ke Trash terlebih dahulu agar bisa dipulihkan
+      try {
+        await fetch("/api/admin/trash", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "trash",
+            entity_type: section,
+            entity_id: String(id),
+            title: itemLabel,
+            payload: row,
+            username: currentAdminUsername,
+          }),
+        });
+      } catch (err) {
+        console.warn("Failed to backup to trash:", err);
+      }
+
       const res  = await fetch(api(`${c.endpoint}/${id}`), { method: "DELETE" });
       const json = await res.json();
       if (json.status) {
-        showToast("Berhasil dihapus!", "success");
+        showToast("Berhasil dihapus (dipindahkan ke Trash)!", "success");
         recordDashboardActivity(
           "Hapus Data",
           section.toUpperCase(),
-          `Menghapus item di modul ${section}`
+          `Menghapus item "${itemLabel}" di modul ${section} (dipindahkan ke Trash)`,
+          currentAdminUsername
         );
         load();
       }
@@ -4639,9 +4690,81 @@ function SectionManager({ section }: { section: Section }) {
       {confirm && <ConfirmModal msg={`Hapus "${confirm.title || confirm.label || confirm.stat_key || confirm.content?.slice(0, 40) || "item ini"}"?`} onConfirm={() => del(confirm)} onCancel={() => setConfirm(null)} />}
       {modal && <FormModal title={modal === "add" ? `Tambah ${section}` : `Edit ${section}`} fields={c.fields} data={formData} onChange={(k, v) => setFormData(prev => ({ ...prev, [k]: v }))} onSave={save} onClose={() => setModal(null)} saving={saving} />}
 
+      {section === "news" && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <button
+              type="button"
+              onClick={() => setNewsTab("cavallery")}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 8,
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                border: newsTab === "cavallery" ? "1px solid var(--cv-orange)" : "1px solid var(--adm-border)",
+                background: newsTab === "cavallery" ? "color-mix(in srgb, var(--cv-orange) 18%, transparent)" : "var(--adm-surface)",
+                color: newsTab === "cavallery" ? "var(--cv-orange)" : "var(--adm-text)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <i className="bx bx-shield-quarter" /> Berita Cavallery (Statement)
+            </button>
+            <button
+              type="button"
+              onClick={() => setNewsTab("jkt48")}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 8,
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                border: newsTab === "jkt48" ? "1px solid var(--cv-orange)" : "1px solid var(--adm-border)",
+                background: newsTab === "jkt48" ? "color-mix(in srgb, var(--cv-orange) 18%, transparent)" : "var(--adm-surface)",
+                color: newsTab === "jkt48" ? "var(--cv-orange)" : "var(--adm-text)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <i className="bx bx-news" /> Berita Resmi JKT48 (Official API)
+            </button>
+          </div>
+
+          <div style={{
+            background: "color-mix(in srgb, var(--cv-orange) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--cv-orange) 25%, transparent)",
+            borderRadius: 8,
+            padding: "10px 14px",
+            fontSize: "0.84rem",
+            color: "var(--cv-text)",
+            lineHeight: 1.5,
+          }}>
+            {newsTab === "cavallery" ? (
+              <span>
+                <i className="bx bx-broadcast" style={{ color: "var(--cv-orange)", marginRight: 6 }} />
+                <strong>Realtime Sync:</strong> Berita Cavallery tersambung langsung secara realtime ke <strong>Halaman Utama (Home)</strong> dan <strong>/news</strong>. Mengubah slug URL berita akan otomatis memperbarui link publik menjadi <code>/news/cavallery-statement/[slug]</code> tanpa jeda/cache.
+              </span>
+            ) : (
+              <span>
+                <i className="bx bx-info-circle" style={{ color: "var(--cv-orange)", marginRight: 6 }} />
+                <strong>Feed Resmi JKT48:</strong> Data berita ini diambil langsung dari feed resmi situs JKT48 (read-only) untuk ditampilkan di portal berita publik.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}><i className="bx bx-data" /> {section.charAt(0).toUpperCase() + section.slice(1)}<span className={styles.count}>{rows.length} item</span></h2>
-        <button className={styles.btnPrimary} onClick={openAdd}><i className="bx bx-plus" /> Tambah</button>
+        <h2 className={styles.sectionTitle}>
+          <i className="bx bx-data" /> {section === "news" ? (newsTab === "cavallery" ? "Cavallery Statement" : "Berita Resmi JKT48") : section.charAt(0).toUpperCase() + section.slice(1)}
+          <span className={styles.count}>{rows.length} item</span>
+        </h2>
+        {!(section === "news" && newsTab === "jkt48") && (
+          <button className={styles.btnPrimary} onClick={openAdd}><i className="bx bx-plus" /> Tambah {section === "news" ? "Berita" : ""}</button>
+        )}
       </div>
 
       {section === "setlists" && (
@@ -4663,7 +4786,17 @@ function SectionManager({ section }: { section: Section }) {
         </div>
       )}
 
-      {loading ? <div className={styles.loadingState}><i className="bx bx-loader-alt bx-spin" /> Memuat data...</div> : <DataTable cols={c.cols} rows={rows} onEdit={openEdit} onDelete={row => setConfirm(row)} />}
+      {loading ? (
+        <div className={styles.loadingState}><i className="bx bx-loader-alt bx-spin" /> Memuat data...</div>
+      ) : (
+        <DataTable
+          cols={section === "news" && newsTab === "jkt48" ? jkt48Cols : c.cols}
+          rows={rows}
+          onEdit={openEdit}
+          onDelete={row => setConfirm(row)}
+          readOnly={section === "news" && newsTab === "jkt48"}
+        />
+      )}
     </div>
   );
 }
@@ -9209,7 +9342,7 @@ function DashboardHome({ onNav }: { onNav: (s: Section) => void }) {
     ([
       { key: "recruitment", path: "/api/recruitment/submissions" },
       { key: "esport",      path: "/api/esport"      },
-      { key: "news",        path: "/api/news"        },
+      { key: "news",        path: "/api/news?type=cavallery" },
       { key: "timeline",    path: "/api/timeline"    },
       { key: "gallery",     path: "/api/gallery"     },
       { key: "setlists",    path: "/api/setlists"    },
@@ -11131,8 +11264,244 @@ function UsersManager({ currentRole, currentUsername }: { currentRole?: string; 
   );
 }
 
+// ─── TEMPAT SAMPAH (TRASH MANAGER) ──────────────────────────────
+function TrashManager({ currentRole, currentUsername }: { currentRole?: string; currentUsername?: string }) {
+  const isSuperadmin = currentRole === "superadmin";
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+
+  const fetchTrash = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/trash?type=${typeFilter}`);
+      const json = await res.json();
+      if (json.status && Array.isArray(json.data)) {
+        setItems(json.data);
+      } else {
+        setItems([]);
+      }
+    } catch {
+      setToast({ msg: "Gagal memuat data tempat sampah", type: "error" });
+    }
+    setLoading(false);
+  }, [typeFilter]);
+
+  useEffect(() => { fetchTrash(); }, [fetchTrash]);
+
+  const handleRestore = async (item: any) => {
+    if (!window.confirm(`Pulihkan "${item.title || item.entity_id}" kembali ke modul ${item.entity_type}?`)) return;
+    setActionLoading(item.id);
+    try {
+      const res = await fetch("/api/admin/trash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore", id: item.id, username: currentUsername || currentAdminUsername }),
+      });
+      const json = await res.json();
+      if (json.status) {
+        setToast({ msg: json.message || "Data berhasil dipulihkan!", type: "success" });
+        fetchTrash();
+      } else {
+        setToast({ msg: json.message || "Gagal memulihkan", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Terjadi kesalahan jaringan", type: "error" });
+    }
+    setActionLoading(null);
+  };
+
+  const handleDeletePermanent = async (item: any) => {
+    if (!window.confirm(`PERINGATAN: Hapus PERMANEN "${item.title || item.entity_id}"? Data tidak akan bisa dikembalikan lagi!`)) return;
+    setActionLoading(item.id);
+    try {
+      const res = await fetch("/api/admin/trash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete_permanent", id: item.id, username: currentUsername || currentAdminUsername }),
+      });
+      const json = await res.json();
+      if (json.status) {
+        setToast({ msg: json.message || "Item berhasil dihapus permanen", type: "success" });
+        fetchTrash();
+      } else {
+        setToast({ msg: json.message || "Gagal menghapus", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Terjadi kesalahan jaringan", type: "error" });
+    }
+    setActionLoading(null);
+  };
+
+  const handleEmptyTrash = async () => {
+    if (!isSuperadmin) {
+      setToast({ msg: "Hanya Superadmin yang dapat mengosongkan seluruh tempat sampah", type: "error" });
+      return;
+    }
+    if (!window.confirm("PERINGATAN BESAR: Apakah Anda yakin ingin MENGOSONGKAN SELURUH TEMPAT SAMPAH? Semua item yang ada di sini akan terhapus selamanya!")) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/trash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "empty_trash", username: currentUsername || currentAdminUsername }),
+      });
+      const json = await res.json();
+      if (json.status) {
+        setToast({ msg: json.message || "Tempat sampah berhasil dikosongkan", type: "success" });
+        fetchTrash();
+      } else {
+        setToast({ msg: json.message || "Gagal mengosongkan tempat sampah", type: "error" });
+      }
+    } catch {
+      setToast({ msg: "Terjadi kesalahan jaringan", type: "error" });
+    }
+    setLoading(false);
+  };
+
+  const filtered = items.filter(it => {
+    const q = search.toLowerCase();
+    const matchSearch = !search ||
+      (it.title || "").toLowerCase().includes(q) ||
+      (it.entity_id || "").toLowerCase().includes(q) ||
+      (it.deleted_by || "").toLowerCase().includes(q);
+    return matchSearch;
+  });
+
+  const uniqueTypes = Array.from(new Set(items.map(i => i.entity_type))).filter(Boolean);
+
+  return (
+    <div className={styles.sectionWrap}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+
+      <div className={styles.sectionHeader}>
+        <div>
+          <h2 className={styles.sectionTitle} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <i className="bx bx-trash" style={{ color: "var(--cv-orange)" }} /> Tempat Sampah (Recycle Bin / Trash)
+          </h2>
+          <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "var(--cv-text-mute)" }}>
+            Item yang dihapus dari modul News, Galeri, Timeline, dll. disimpan di sini dan dapat dipulihkan kapan saja.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {items.length > 0 && isSuperadmin && (
+            <button
+              className={styles.btnDanger}
+              onClick={handleEmptyTrash}
+              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8rem", padding: "8px 14px", background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", color: "#f87171" }}
+            >
+              <i className="bx bx-trash-alt" /> Kosongkan Sampah
+            </button>
+          )}
+          <button className={styles.btnGhost} onClick={fetchTrash} disabled={loading} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <i className={`bx bx-refresh ${loading ? "bx-spin" : ""}`} /> Muat Ulang
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
+          <input
+            type="text"
+            placeholder="Cari judul, ID, atau penghapus..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ width: "100%", padding: "8px 12px 8px 34px", borderRadius: 8, background: "var(--adm-surface)", border: "1px solid var(--adm-border)", color: "var(--adm-text)", fontSize: "0.85rem" }}
+          />
+          <i className="bx bx-search" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--cv-text-mute)" }} />
+        </div>
+
+        <select
+          value={typeFilter}
+          onChange={e => setTypeFilter(e.target.value)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: "var(--adm-surface)", border: "1px solid var(--adm-border)", color: "var(--adm-text)", fontSize: "0.85rem" }}
+        >
+          <option value="all">Semua Modul ({items.length})</option>
+          {uniqueTypes.map(t => (
+            <option key={t} value={t}>{t.toUpperCase()} ({items.filter(i => i.entity_type === t).length})</option>
+          ))}
+        </select>
+      </div>
+
+      {loading ? (
+        <div style={{ padding: 48, textAlign: "center", color: "var(--cv-orange)" }}>
+          <i className="bx bx-loader-alt bx-spin" style={{ fontSize: "2rem", marginBottom: 8, display: "block" }} />
+          Memuat tempat sampah...
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ padding: 48, textAlign: "center", background: "var(--adm-surface)", borderRadius: 12, border: "1px dashed var(--adm-border)", color: "var(--cv-text-mute)" }}>
+          <i className="bx bx-trash" style={{ fontSize: "3rem", display: "block", marginBottom: 12, opacity: 0.4 }} />
+          Tempat sampah kosong. Tidak ada data yang sedang dihapus.
+        </div>
+      ) : (
+        <div className={styles.tableWrap} style={{ maxHeight: "65vh", overflow: "auto" }}>
+          <table className={styles.table}>
+            <thead style={{ position: "sticky", top: 0, zIndex: 5, background: "var(--adm-surface)" }}>
+              <tr>
+                <th style={{ width: 110 }}>Modul</th>
+                <th>Judul / Item</th>
+                <th style={{ width: 140 }}>Dihapus Oleh</th>
+                <th style={{ width: 160 }}>Waktu Dihapus</th>
+                <th style={{ width: 190, textAlign: "center" }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(item => (
+                <tr key={item.id}>
+                  <td>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: "color-mix(in srgb, var(--cv-orange) 15%, transparent)", color: "var(--cv-orange)", border: "1px solid color-mix(in srgb, var(--cv-orange) 30%, transparent)", textTransform: "uppercase" }}>
+                      {item.entity_type}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 700, fontSize: "0.88rem" }}>{item.title || item.entity_id}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--cv-text-mute)" }}>ID Asli: {item.entity_id}</div>
+                  </td>
+                  <td>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "0.82rem", fontWeight: 600 }}>
+                      <i className="bx bx-user" style={{ color: "var(--cv-orange)" }} /> {item.deleted_by || "Admin"}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: "0.78rem", color: "var(--cv-text-mute)" }}>
+                    {new Date(item.deleted_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                      <button
+                        type="button"
+                        onClick={() => handleRestore(item)}
+                        disabled={actionLoading === item.id}
+                        style={{ padding: "6px 12px", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", background: "rgba(16, 185, 129, 0.15)", border: "1px solid #10b981", color: "#10b981", display: "inline-flex", alignItems: "center", gap: 4 }}
+                        title="Pulihkan data kembali ke modul asalnya"
+                      >
+                        <i className={`bx ${actionLoading === item.id ? "bx-loader-alt bx-spin" : "bx-undo"}`} /> Pulihkan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePermanent(item)}
+                        disabled={actionLoading === item.id}
+                        style={{ padding: "6px 10px", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", background: "rgba(239, 68, 68, 0.12)", border: "1px solid #ef4444", color: "#f87171", display: "inline-flex", alignItems: "center", gap: 4 }}
+                        title="Hapus permanen selamanya"
+                      >
+                        <i className="bx bx-trash" /> Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── RIWAYAT AKTIVITAS (ACTIVITY LOGS MANAGER) ───────────────────
-function ActivityLogsManager({ currentRole }: { currentRole?: string }) {
+function ActivityLogsManager({ currentRole, currentUsername }: { currentRole?: string; currentUsername?: string }) {
   const isSuperadmin = currentRole === "superadmin";
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -11197,7 +11566,7 @@ function ActivityLogsManager({ currentRole }: { currentRole?: string }) {
       const res = await fetch("/api/admin/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", type: "activity", ids: Array.from(selectedIds) }),
+        body: JSON.stringify({ action: "delete", type: "activity", ids: Array.from(selectedIds), username: currentUsername || currentAdminUsername }),
       });
       const json = await res.json();
       if (json.success) {
@@ -11222,7 +11591,7 @@ function ActivityLogsManager({ currentRole }: { currentRole?: string }) {
       const res = await fetch("/api/admin/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "clear_all", type: "activity" }),
+        body: JSON.stringify({ action: "clear_all", type: "activity", username: currentUsername || currentAdminUsername }),
       });
       const json = await res.json();
       if (json.success) {
@@ -11387,7 +11756,7 @@ function ActivityLogsManager({ currentRole }: { currentRole?: string }) {
 }
 
 // ─── RIWAYAT LOGIN (LOGIN LOGS MANAGER) ─────────────────────────
-function LoginLogsManager({ currentRole }: { currentRole?: string }) {
+function LoginLogsManager({ currentRole, currentUsername }: { currentRole?: string; currentUsername?: string }) {
   const isSuperadmin = currentRole === "superadmin";
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -11451,7 +11820,7 @@ function LoginLogsManager({ currentRole }: { currentRole?: string }) {
       const res = await fetch("/api/admin/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", type: "login", ids: Array.from(selectedIds) }),
+        body: JSON.stringify({ action: "delete", type: "login", ids: Array.from(selectedIds), username: currentUsername || currentAdminUsername }),
       });
       const json = await res.json();
       if (json.success) {
@@ -11476,7 +11845,7 @@ function LoginLogsManager({ currentRole }: { currentRole?: string }) {
       const res = await fetch("/api/admin/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "clear_all", type: "login" }),
+        body: JSON.stringify({ action: "clear_all", type: "login", username: currentUsername || currentAdminUsername }),
       });
       const json = await res.json();
       if (json.success) {
@@ -12054,6 +12423,7 @@ const navGroups: NavGroup[] = [
     icon: "bx-cog",
     items: [
       { key: "users",        icon: "bx-user-pin",      label: "Manajemen Pengguna" },
+      { key: "trash",        icon: "bx-trash",         label: "Tempat Sampah (Trash)" },
       { key: "activitylogs", icon: "bx-history",       label: "Riwayat Aktivitas"  },
       { key: "loginlogs",    icon: "bx-log-in-circle", label: "Riwayat Login"     },
       { key: "visitorlocations", icon: "bx-map-pin",   label: "Lokasi Pengunjung" },
@@ -12095,7 +12465,7 @@ export default function AdminPage() {
   if (!authed) return <LoginPage onLogin={(userData) => applyUserData(userData)} />;
 
   const navigate = (section: Section) => {
-    const SYSTEM_SECTIONS = ["users", "activitylogs", "loginlogs", "visitorlocations"];
+    const SYSTEM_SECTIONS = ["users", "trash", "activitylogs", "loginlogs", "visitorlocations"];
     if (SYSTEM_SECTIONS.includes(section as string) && !isSuperadmin) {
       setActive("dashboard");
       setDrawerOpen(false);
@@ -12290,8 +12660,9 @@ export default function AdminPage() {
             : active === "twoshot"    ? <TwoShotManager />
             : active === "dengerine"  ? <DengerineManager />
             : active === "users"      ? (isSuperadmin ? <UsersManager currentRole={role} currentUsername={username} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
-            : active === "activitylogs"? (isSuperadmin ? <ActivityLogsManager currentRole={role} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
-            : active === "loginlogs"  ? (isSuperadmin ? <LoginLogsManager currentRole={role} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
+            : active === "trash"      ? <TrashManager currentRole={role} currentUsername={username} />
+            : active === "activitylogs"? (isSuperadmin ? <ActivityLogsManager currentRole={role} currentUsername={username} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
+            : active === "loginlogs"  ? (isSuperadmin ? <LoginLogsManager currentRole={role} currentUsername={username} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
             : active === "visitorlocations"? (isSuperadmin ? <VisitorLocationsManager currentRole={role} /> : <div style={{ padding: 48, textAlign: "center", color: "#f87171" }}><i className="bx bx-shield-x" style={{ fontSize: "3rem", marginBottom: 12, display: "block" }} />Akses Ditolak: Fitur Manajemen Sistem hanya dapat diakses oleh Super Admin.</div>)
             : <SectionManager section={active} />}
           </div>

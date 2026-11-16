@@ -22,10 +22,23 @@ interface NewsDetail {
 async function getNewsDetail(slug: string): Promise<NewsDetail | null> {
   try {
     const cleanSlug = decodeURIComponent(slug).trim();
+    const hyphenSlug = cleanSlug.toLowerCase().replace(/[\s_]+/g, "-").replace(/-+/g, "-");
+    const spaceSlug = cleanSlug.replace(/[-_]+/g, " ");
+
     if (isMySqlConfigured()) {
       const rows = await query<any[]>(
-        "SELECT * FROM `news` WHERE LOWER(`slug`)=LOWER(?) OR `slug`=? OR `id`=? LIMIT 1",
-        [cleanSlug, cleanSlug, cleanSlug]
+        `SELECT * FROM \`news\` 
+         WHERE \`slug\` = ? 
+            OR LOWER(\`slug\`) = LOWER(?) 
+            OR \`slug\` = ? 
+            OR LOWER(\`slug\`) = LOWER(?) 
+            OR REPLACE(LOWER(\`slug\`), '-', ' ') = LOWER(?)
+            OR REPLACE(LOWER(\`slug\`), ' ', '-') = LOWER(?)
+            OR REPLACE(LOWER(\`slug\`), '-', ' ') = LOWER(?)
+            OR \`id\` = ? 
+            OR LOWER(\`title\`) = LOWER(?) 
+         LIMIT 1`,
+        [cleanSlug, cleanSlug, hyphenSlug, hyphenSlug, cleanSlug, cleanSlug, spaceSlug, cleanSlug, cleanSlug]
       );
       if (rows && rows.length > 0) {
         const r = rows[0];

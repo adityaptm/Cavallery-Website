@@ -3,6 +3,7 @@ import { query, isMySqlConfigured } from "@/lib/mysql";
 import { revalidatePath } from "next/cache";
 import { invalidateApiCache } from "@/lib/apiCache";
 import { formatSlug, formatSqlDatetime } from "../route";
+import { moveToTrash } from "@/lib/trash";
 
 const NO_CACHE_HEADERS: Record<string, string> = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
@@ -13,11 +14,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const cleanId = decodeURIComponent(id).trim();
+    const hyphenId = cleanId.toLowerCase().replace(/[\s_]+/g, "-");
 
     if (isMySqlConfigured()) {
       const rows = await query<any[]>(
-        "SELECT * FROM `news` WHERE `id`=? OR LOWER(`slug`)=LOWER(?) OR `slug`=? LIMIT 1",
-        [cleanId, cleanId, cleanId]
+        `SELECT * FROM \`news\` 
+         WHERE \`id\`=? 
+            OR \`slug\`=? 
+            OR LOWER(\`slug\`)=LOWER(?) 
+            OR \`slug\`=? 
+            OR LOWER(\`slug\`)=LOWER(?)
+            OR REPLACE(LOWER(\`slug\`), '-', ' ') = LOWER(?)
+            OR REPLACE(LOWER(\`slug\`), ' ', '-') = LOWER(?)
+         LIMIT 1`,
+        [cleanId, cleanId, cleanId, hyphenId, hyphenId, cleanId, cleanId]
       );
       if (rows && rows.length > 0) {
         return NextResponse.json(
@@ -66,6 +76,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     invalidateApiCache("jkt48_official_news");
 
     try {
+      revalidatePath("/");
       revalidatePath("/news");
       revalidatePath(`/news/cavallery-statement/${slug}`);
       revalidatePath("/news/cavallery-statement/[slug]", "page");
@@ -87,6 +98,26 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     if (!isMySqlConfigured()) return NextResponse.json({ status: false, message: "MySQL not configured" }, { status: 500 });
 
+    // Backup ke tempat sampah (Trash) sebelum dihapus
+    try {
+      const existing = await query<any[]>(
+        "SELECT * FROM `news` WHERE `id`=? OR LOWER(`slug`)=LOWER(?) OR `slug`=? LIMIT 1",
+        [cleanId, cleanId, cleanId]
+      );
+      if (existing && existing.length > 0) {
+        const item = existing[0];
+        await moveToTrash({
+          entity_type: "news",
+          entity_id: String(item.id),
+          title: item.title || item.slug || `News #${item.id}`,
+          payload: item,
+          deleted_by: "Admin",
+        });
+      }
+    } catch (trashErr) {
+      console.warn("[News DELETE] Failed to backup to trash:", trashErr);
+    }
+
     await query("DELETE FROM `news` WHERE `id`=? OR LOWER(`slug`)=LOWER(?) OR `slug`=?", [cleanId, cleanId, cleanId]);
 
     // Invalidate caches immediately
@@ -94,6 +125,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     invalidateApiCache("jkt48_official_news");
 
     try {
+      revalidatePath("/");
       revalidatePath("/news");
       revalidatePath("/news/cavallery-statement/[slug]", "page");
     } catch {}

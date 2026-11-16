@@ -15,6 +15,7 @@ export interface StructureNode {
   role_label: string;
   person_name: string | null;
   accent_color: string | null;
+  avatar_url: string | null;
   sort_order: number;
   is_active: number;
   created_at?: string;
@@ -99,8 +100,23 @@ export async function updateStructureSettings(
   return getStructureSettings();
 }
 
+let hasEnsuredAvatarCol = false;
+export async function ensureAvatarColumn(): Promise<void> {
+  if (hasEnsuredAvatarCol) return;
+  try {
+    const cols = await query<any[]>("SHOW COLUMNS FROM structure_nodes LIKE 'avatar_url'");
+    if (cols && cols.length === 0) {
+      await query("ALTER TABLE structure_nodes ADD COLUMN avatar_url VARCHAR(500) NULL AFTER accent_color");
+    }
+    hasEnsuredAvatarCol = true;
+  } catch {
+    hasEnsuredAvatarCol = true;
+  }
+}
+
 /** Ambil semua node dari structure_nodes */
 export async function getAllNodes(onlyActive = false): Promise<StructureNode[]> {
+  await ensureAvatarColumn();
   const sql = onlyActive
     ? "SELECT * FROM structure_nodes WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
     : "SELECT * FROM structure_nodes ORDER BY sort_order ASC, id ASC";
@@ -116,6 +132,7 @@ export async function getAllNodes(onlyActive = false): Promise<StructureNode[]> 
     role_label: String(r.role_label || ""),
     person_name: r.person_name ? String(r.person_name) : null,
     accent_color: r.accent_color ? String(r.accent_color) : null,
+    avatar_url: r.avatar_url ? String(r.avatar_url) : (r.photo_url ? String(r.photo_url) : null),
     sort_order: Number(r.sort_order || 0),
     is_active: Number(r.is_active ?? 1),
     created_at: r.created_at ? String(r.created_at) : undefined,
@@ -257,9 +274,11 @@ export async function createStructureNode(data: {
   role_label: string;
   person_name?: string | null;
   accent_color?: string | null;
+  avatar_url?: string | null;
   sort_order?: number;
   is_active?: number;
 }): Promise<StructureNode> {
+  await ensureAvatarColumn();
   invalidateStructureCache();
 
   const roleLabel = (data.role_label || "").trim();
@@ -311,12 +330,13 @@ export async function createStructureNode(data: {
 
   const placement = data.placement === "below" ? "below" : "normal";
   const personName = data.person_name?.trim() ? data.person_name.trim() : null;
+  const avatarUrl = data.avatar_url?.trim() ? data.avatar_url.trim() : null;
   const isActive = data.is_active !== undefined ? (data.is_active ? 1 : 0) : 1;
 
   const res = await query<any>(
     `INSERT INTO structure_nodes 
-     (parent_id, node_type, placement, role_label, person_name, accent_color, sort_order, is_active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+     (parent_id, node_type, placement, role_label, person_name, accent_color, avatar_url, sort_order, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.parent_id,
       nodeType,
@@ -324,6 +344,7 @@ export async function createStructureNode(data: {
       roleLabel,
       personName,
       accentColor,
+      avatarUrl,
       sortOrder,
       isActive,
     ]
@@ -334,7 +355,10 @@ export async function createStructureNode(data: {
     "SELECT * FROM structure_nodes WHERE id = ?",
     [insertId]
   );
-  return created[0];
+  if (!created || created.length === 0) {
+    throw new Error("Gagal mengambil node yang baru dibuat");
+  }
+  return created[0] as StructureNode;
 }
 
 /** Update node yang sudah ada */
@@ -345,11 +369,13 @@ export async function updateStructureNode(
     role_label?: string;
     person_name?: string | null;
     accent_color?: string | null;
+    avatar_url?: string | null;
     placement?: Placement;
     sort_order?: number;
     is_active?: number | boolean;
   }
 ): Promise<StructureNode> {
+  await ensureAvatarColumn();
   invalidateStructureCache();
 
   const existing = await query<any[]>(
@@ -404,6 +430,10 @@ export async function updateStructureNode(
     data.person_name !== undefined
       ? data.person_name?.trim() || null
       : current.person_name;
+  const avatarUrl =
+    data.avatar_url !== undefined
+      ? data.avatar_url?.trim() || null
+      : current.avatar_url;
   const placement =
     data.placement !== undefined
       ? data.placement === "below"
@@ -423,7 +453,7 @@ export async function updateStructureNode(
 
   await query(
     `UPDATE structure_nodes 
-     SET parent_id = ?, role_label = ?, person_name = ?, accent_color = ?, 
+     SET parent_id = ?, role_label = ?, person_name = ?, accent_color = ?, avatar_url = ?, 
          placement = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
     [
@@ -431,6 +461,7 @@ export async function updateStructureNode(
       roleLabel,
       personName,
       accentColor,
+      avatarUrl,
       placement,
       sortOrder,
       isActive,
@@ -442,7 +473,10 @@ export async function updateStructureNode(
     "SELECT * FROM structure_nodes WHERE id = ?",
     [id]
   );
-  return updated[0];
+  if (!updated || updated.length === 0) {
+    throw new Error("Gagal mengambil node yang diperbarui");
+  }
+  return updated[0] as StructureNode;
 }
 
 /** Hapus node beserta keturunannya */

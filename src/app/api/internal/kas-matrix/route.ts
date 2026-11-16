@@ -17,11 +17,14 @@ export async function GET(req: Request) {
       no: row.no,
       noAnggota: row.noAnggota,
       nama: row.nama,
+      fotoProfil: row.fotoProfil || null,
       jabatan: row.jabatan,
       isAdminRole: row.isAdminRole,
       bulanMulai: row.bulanMulai,
       isAlreadyJoined: row.isAlreadyJoined,
       totalKas: row.isAdminRole ? null : row.totalKas,
+      totalBelumLunas: row.isAdminRole ? null : (row.totalBelumLunas ?? 0),
+      unpaidCount: row.isAdminRole ? null : (row.unpaidCount ?? 0),
       months: row.months,
     }));
 

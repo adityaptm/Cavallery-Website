@@ -84,6 +84,9 @@ export default function PublicKasMatrixPage() {
     );
   });
 
+  const totalLunasTahun = filteredRows.reduce((sum: number, r: any) => sum + (Number(r.totalKas) || 0), 0);
+  const totalBelumLunasTahun = filteredRows.reduce((sum: number, r: any) => sum + (Number(r.totalBelumLunas) || 0), 0);
+
   // Filter Pengeluaran Kas
   const pengeluaranList: any[] = matrixData?.pengeluaranList || [];
   const filteredPengeluaran = pengeluaranList.filter((p: any) => {
@@ -427,6 +430,20 @@ export default function PublicKasMatrixPage() {
               </div>
             </div>
 
+            {/* Total Terbayar vs Belum Lunas Ringkas */}
+            {matrixData && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 14, fontSize: "0.82rem" }}>
+                <span style={{ padding: "6px 12px", borderRadius: 8, background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.3)", color: "#10b981", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <i className="bx bx-check-circle" style={{ fontSize: "1.1rem" }} />
+                  Total Terbayar ({tahun}): {formatRupiah(totalLunasTahun)}
+                </span>
+                <span style={{ padding: "6px 12px", borderRadius: 8, background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#ef4444", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <i className="bx bx-error-circle" style={{ fontSize: "1.1rem" }} />
+                  Total Belum Lunas ({tahun}): {formatRupiah(totalBelumLunasTahun)}
+                </span>
+              </div>
+            )}
+
             {/* Subtotal Bulan Per-Kolom */}
             {matrixData && (
               <div
@@ -514,7 +531,7 @@ export default function PublicKasMatrixPage() {
                   <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                     <tr>
                       <th className={styles.colStickyNo} style={{ width: 44, textAlign: "center", background: "var(--surface)", color: "var(--primary)" }}>No</th>
-                      <th className={styles.colStickyNoAnggota} style={{ width: 100, background: "var(--surface)", color: "var(--primary)" }}>No. Anggota</th>
+                      <th className={styles.colStickyNoAnggota} style={{ width: 140, minWidth: 130, background: "var(--surface)", color: "var(--primary)" }}>No. Anggota</th>
                       <th className={styles.colStickyNama} style={{ minWidth: 160, background: "var(--surface)", color: "var(--primary)", borderRight: "2px solid var(--border)" }}>Nama Anggota</th>
                       {MONTH_NAMES.map((m, idx) => {
                         const mNum = idx + 1;
@@ -536,6 +553,7 @@ export default function PublicKasMatrixPage() {
                         );
                       })}
                       <th style={{ textAlign: "right", minWidth: 100 }}>Total Lunas</th>
+                      <th style={{ textAlign: "right", minWidth: 105, color: "#f87171" }}>Belum Lunas</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -546,9 +564,46 @@ export default function PublicKasMatrixPage() {
                             {idx + 1}
                           </td>
                           <td className={styles.colStickyNoAnggota}>
-                            <span className={styles.noAnggota} style={{ fontSize: "0.78rem" }}>
-                              {r.noAnggota}
-                            </span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                              {r.fotoProfil ? (
+                                <img
+                                  src={r.fotoProfil}
+                                  alt=""
+                                  style={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    objectFit: "cover",
+                                    border: "1px solid var(--border)",
+                                    flexShrink: 0,
+                                  }}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    background: "color-mix(in srgb, var(--primary) 14%, transparent)",
+                                    color: "var(--primary)",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "0.75rem",
+                                    fontWeight: 700,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <i className="bx bx-user" />
+                                </div>
+                              )}
+                              <span className={styles.noAnggota} style={{ fontSize: "0.78rem" }}>
+                                {r.noAnggota}
+                              </span>
+                            </div>
                           </td>
                           <td className={`${styles.nameCol} ${styles.colStickyNama}`} style={{ borderRight: "2px solid var(--border)" }}>
                             <div style={{ fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 6 }}>
@@ -629,6 +684,37 @@ export default function PublicKasMatrixPage() {
                           })}
                           <td style={{ textAlign: "right", fontWeight: 800, color: "#10b981", fontSize: "0.85rem" }}>
                             {r.totalKas !== null ? formatRupiah(r.totalKas) : "-"}
+                          </td>
+                          <td style={{ textAlign: "right", fontWeight: 800, fontSize: "0.85rem" }}>
+                            {r.isAdminRole ? (
+                              <span style={{ color: "var(--fg-muted)", fontSize: "0.75rem" }}>-</span>
+                            ) : (r.totalBelumLunas ?? 0) > 0 ? (
+                              <span
+                                style={{
+                                  color: "#ef4444",
+                                  background: "rgba(239, 68, 68, 0.1)",
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  display: "inline-block",
+                                }}
+                                title={`${r.unpaidCount || 0} bulan belum lunas`}
+                              >
+                                {formatRupiah(r.totalBelumLunas)}
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  color: "#10b981",
+                                  fontSize: "0.75rem",
+                                  background: "rgba(16, 185, 129, 0.1)",
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  display: "inline-block",
+                                }}
+                              >
+                                Lunas
+                              </span>
+                            )}
                           </td>
                         </tr>
                       );

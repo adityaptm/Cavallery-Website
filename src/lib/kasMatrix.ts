@@ -356,7 +356,7 @@ export async function toggleMonthPayment(params: {
     tahun,
     noAnggota,
     bulan,
-    isPaid,
+    isPaid: targetStatus === "diverifikasi",
   }).catch((e) => console.error("[Spreadsheet Matrix] Error updating cell:", e));
 
   return true;
@@ -370,7 +370,7 @@ export async function getYearlyKasMatrix(tahun: number) {
 
   // 1. Ambil Semua Anggota Aktif & Natural Sort
   const rawAnggota = (await query<any[]>(`
-    SELECT id, no_anggota, nama_lengkap, id_line, jabatan, divisi, anggota_sejak, created_at 
+    SELECT id, no_anggota, nama_lengkap, id_line, jabatan, divisi, anggota_sejak, created_at, foto_profil 
     FROM anggota 
     WHERE status = 'aktif'
     ORDER BY 
@@ -470,11 +470,20 @@ export async function getYearlyKasMatrix(tahun: number) {
       }
     }
 
+    let unpaidCount = 0;
+    for (let m = 1; m <= 12; m++) {
+      if (months[m] === false) {
+        unpaidCount++;
+      }
+    }
+    const totalBelumLunas = unpaidCount * 15000;
+
     return {
       no: idx + 1,
       anggotaId: a.id,
       noAnggota,
       nama,
+      fotoProfil: a.foto_profil ? String(a.foto_profil).trim() : null,
       idLine: a.id_line || "-",
       jabatan: a.jabatan || "Anggota",
       divisi: a.divisi,
@@ -484,6 +493,8 @@ export async function getYearlyKasMatrix(tahun: number) {
       bulanMulai: bulanMulai > 0 ? bulanMulai : "-",
       isAlreadyJoined,
       totalKas: totalKasAnggota,
+      totalBelumLunas,
+      unpaidCount,
       months,
     };
   });

@@ -58,6 +58,7 @@ export default function AdminStrukturPage() {
   // Form Fields
   const [formRole, setFormRole] = useState("");
   const [formPerson, setFormPerson] = useState("");
+  const [formAvatarUrl, setFormAvatarUrl] = useState("");
   const [formNodeType, setFormNodeType] = useState<NodeType>("member");
   const [formPlacement, setFormPlacement] = useState<Placement>("normal");
   const [formColor, setFormColor] = useState("#3f7d6e");
@@ -141,6 +142,7 @@ export default function AdminStrukturPage() {
     const root = nodes.find((n) => n.node_type === "root");
     setFormRole("");
     setFormPerson("");
+    setFormAvatarUrl("");
     setFormNodeType("unit");
     setFormPlacement("normal");
     setFormColor(pickNextColor());
@@ -153,6 +155,7 @@ export default function AdminStrukturPage() {
     setTargetNode(parent);
     setFormRole("");
     setFormPerson("");
+    setFormAvatarUrl("");
     // Jika parent adalah unit, default group atau member
     setFormNodeType("member");
     setFormPlacement("normal");
@@ -165,6 +168,7 @@ export default function AdminStrukturPage() {
     setTargetNode(node);
     setFormRole(node.role_label);
     setFormPerson(node.person_name || "");
+    setFormAvatarUrl(node.avatar_url || "");
     setFormNodeType(node.node_type);
     setFormPlacement(node.placement);
     setFormColor(node.accent_color || pickNextColor());
@@ -217,6 +221,7 @@ export default function AdminStrukturPage() {
             node_type: formNodeType,
             role_label: formRole.trim(),
             person_name: formPerson.trim() || null,
+            avatar_url: formAvatarUrl.trim() || null,
             placement: formPlacement,
             accent_color: formNodeType === "unit" ? formColor : null,
             is_active: formIsActive ? 1 : 0,
@@ -238,6 +243,7 @@ export default function AdminStrukturPage() {
           body: JSON.stringify({
             role_label: formRole.trim(),
             person_name: formPerson.trim() || null,
+            avatar_url: formAvatarUrl.trim() || null,
             placement: formPlacement,
             accent_color: targetNode.node_type === "unit" ? formColor : null,
             is_active: formIsActive ? 1 : 0,
@@ -446,7 +452,24 @@ export default function AdminStrukturPage() {
             )}
 
             {/* Info Jabatan & Nama */}
-            <div className={styles.nodeInfo}>
+            <div className={styles.nodeInfo} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {node.avatar_url && (
+                <img
+                  src={node.avatar_url}
+                  alt=""
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "1px solid var(--cv-line, #444)",
+                    flexShrink: 0,
+                  }}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              )}
               <span className={styles.nodeRole}>{node.role_label}</span>
               {node.person_name && (
                 <span className={styles.nodePerson}>• {node.person_name}</span>
@@ -798,15 +821,46 @@ export default function AdminStrukturPage() {
                 </div>
 
                 {formNodeType === "member" && (
-                  <div className={styles.field}>
-                    <label>Nama Orang (Boleh kosong)</label>
-                    <input
-                      type="text"
-                      value={formPerson}
-                      onChange={(e) => setFormPerson(e.target.value)}
-                      placeholder="Nama anggota"
-                    />
-                  </div>
+                  <>
+                    <div className={styles.field}>
+                      <label>Nama Orang (Boleh kosong)</label>
+                      <input
+                        type="text"
+                        value={formPerson}
+                        onChange={(e) => setFormPerson(e.target.value)}
+                        placeholder="Nama anggota"
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <label>URL Foto Profil (Opsional)</label>
+                      <input
+                        type="text"
+                        value={formAvatarUrl}
+                        onChange={(e) => setFormAvatarUrl(e.target.value)}
+                        placeholder="https://... atau /uploads/..."
+                      />
+                      {formAvatarUrl && (
+                        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                          <img
+                            src={formAvatarUrl}
+                            alt="Preview Foto"
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              border: "2px solid var(--cv-orange, #e05a47)",
+                            }}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
+                          />
+                          <span style={{ fontSize: 12, color: "var(--adm-text-subtle, #999)" }}>Pratinjau Foto Profil</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 <div className={styles.field}>
@@ -868,15 +922,46 @@ export default function AdminStrukturPage() {
                 </div>
 
                 {targetNode.node_type !== "unit" && (
-                  <div className={styles.field}>
-                    <label>Nama Orang (Boleh kosong)</label>
-                    <input
-                      type="text"
-                      value={formPerson}
-                      onChange={(e) => setFormPerson(e.target.value)}
-                      placeholder="Nama orang"
-                    />
-                  </div>
+                  <>
+                    <div className={styles.field}>
+                      <label>Nama Orang (Boleh kosong)</label>
+                      <input
+                        type="text"
+                        value={formPerson}
+                        onChange={(e) => setFormPerson(e.target.value)}
+                        placeholder="Nama orang"
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <label>URL Foto Profil (Opsional)</label>
+                      <input
+                        type="text"
+                        value={formAvatarUrl}
+                        onChange={(e) => setFormAvatarUrl(e.target.value)}
+                        placeholder="https://... atau /uploads/..."
+                      />
+                      {formAvatarUrl && (
+                        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                          <img
+                            src={formAvatarUrl}
+                            alt="Preview Foto"
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              border: "2px solid var(--cv-orange, #e05a47)",
+                            }}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
+                          />
+                          <span style={{ fontSize: 12, color: "var(--adm-text-subtle, #999)" }}>Pratinjau Foto Profil</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {targetNode.node_type === "unit" && (
