@@ -26,11 +26,11 @@ export async function jkt48ConnectGet<T = unknown>(
   params: Record<string, string | number | undefined> = {},
   { revalidate = 60, timeoutMs = 6000 }: { revalidate?: number; timeoutMs?: number } = {}
 ): Promise<T | null> {
-  const key = process.env.JKT48CONNECT_API_KEY;
-  if (!key) {
+  const key = (process.env.JKT48CONNECT_API_KEY || "").trim();
+  if (!key || /[\u0080-\uffff]|\.\.\./.test(key)) {
     if (!warnedMissingKey) {
       warnedMissingKey = true;
-      console.warn("[JKT48Connect] JKT48CONNECT_API_KEY belum di-set; memakai data fallback.");
+      console.warn("[JKT48Connect] JKT48CONNECT_API_KEY belum di-set atau mengandung karakter sensor ('…'); memakai data fallback.");
     }
     return null;
   }

@@ -42,11 +42,19 @@ export async function jkt48Fetch<T = any>(
     throw new Error("jkt48Fetch hanya dapat dijalankan di server (API route / Server Action).");
   }
 
-  const apiKey = process.env.JKT48CONNECT_API_KEY;
+  const apiKey = (process.env.JKT48CONNECT_API_KEY || "").trim();
   if (!apiKey) {
     throw new Jkt48ApiError(
       401,
       "JKT48CONNECT_API_KEY belum dikonfigurasi di environment variable."
+    );
+  }
+
+  // Cek apakah key mengandung karakter non-ASCII (seperti simbol sensor '…' / char 8230)
+  if (/[\u0080-\uffff]|\.\.\./.test(apiKey)) {
+    throw new Jkt48ApiError(
+      400,
+      "Format JKT48CONNECT_API_KEY tidak valid (terdeteksi simbol sensor '…'). Anda menyalin API key yang masih terpotong/tersensor dari dashboard. Silakan klik tombol ikon mata (reveal) atau tombol 'Copy' di https://api.jkt48connect.app/dashboard/keys untuk mendapatkan API key utuh."
     );
   }
 
