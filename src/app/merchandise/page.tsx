@@ -8,7 +8,7 @@ export default function MerchandisePage() {
   return (
     <div className={styles.page}>
       <iframe
-        src="https://jkt48connect.com/cava/shop"
+        src="https://st.oshigo.web.id/cava/shop"
         title="Cavallery Shop"
         style={{
           width: "100%",

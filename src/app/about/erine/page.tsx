@@ -2,6 +2,7 @@ import AboutErineSection from "@/components/home/AboutErineSection";
 import TimelineSection from "@/components/home/TimelineSection";
 import YoutubeSection from "@/components/home/YoutubeSection";
 import SectionDivider from "@/components/SectionDivider";
+import SocialUpdatesFeed from "@/components/jkt48/SocialUpdatesFeed";
 import type { Metadata } from "next";
 import styles from "./page.module.css";
 import { getTimelineData } from "@/lib/timelineService";
@@ -25,6 +26,12 @@ export default async function AboutErinePage() {
   return (
     <div className={styles.page}>
       <AboutErineSection />
+
+      {/* Bagian Update Terbaru (X / Twitter, Instagram, TikTok) */}
+      <section style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px 60px" }}>
+        <SocialUpdatesFeed />
+      </section>
+
       <SectionDivider />
       <YoutubeSection square="e6" />
       <SectionDivider />

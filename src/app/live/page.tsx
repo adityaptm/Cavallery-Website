@@ -6,6 +6,7 @@ import {
   LiveOfflineCard,
   mapApiToLiveCardProps,
 } from "@/components/LiveNowCard";
+import LiveSectionEnhanced from "@/components/jkt48/LiveSectionEnhanced";
 
 const ERINE_IDN_URL = "https://www.idn.app/jkt48_erine";
 const ERINE_SHOWROOM_URL = "https://www.showroom-live.com/r/JKT48_Erine";
@@ -39,7 +40,7 @@ export default function LivePage() {
       const json = await res.json();
       const list: LiveItem[] = Array.isArray(json.data) ? json.data : [];
       setLives(list);
-      setErineLive(Boolean(json.erine_live) || list.length > 0);
+      setErineLive(Boolean(json.erine_live) || list.some((l) => l.is_erine));
       setLastUpdate(new Date());
     } catch (e) {
       setError(String(e));
@@ -87,6 +88,7 @@ export default function LivePage() {
           </button>
         </div>
 
+        {/* Priority Card for Erine */}
         {loading ? (
           <div className={styles.skeletons}>
             {[0, 1].map((i) => (
@@ -98,13 +100,13 @@ export default function LivePage() {
             <i className="bx bx-error-circle" /> {error}
           </div>
         ) : liveMembers.length > 0 ? (
-          /* Erine / Member is Currently Live */
-          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          /* Erine is Currently Live */
+          <div style={{ maxWidth: 680, margin: "0 auto 3rem" }}>
             <LiveNowList members={liveMembers} />
           </div>
         ) : (
-          /* Erine is Currently Offline (Redesigned UI) */
-          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          /* Erine is Currently Offline */
+          <div style={{ maxWidth: 680, margin: "0 auto 3rem" }}>
             <LiveOfflineCard
               name="Catherina Vallencia"
               nickname="Erine"
@@ -113,6 +115,19 @@ export default function LivePage() {
             />
           </div>
         )}
+
+        {/* JKT48 Connect Live Hub & Room Viewer */}
+        <section style={{ marginTop: "2rem" }}>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
+              Live Hub <span style={{ color: "var(--cv-orange)" }}>JKT48 Connect</span>
+            </h2>
+            <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
+              Siaran langsung seluruh member JKT48, notifikasi live, komentar real-time, dan galeri siaran.
+            </p>
+          </div>
+          <LiveSectionEnhanced />
+        </section>
       </div>
     </div>
   );
