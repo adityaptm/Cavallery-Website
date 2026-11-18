@@ -51,7 +51,6 @@ export default function RootLayout({
   return (
     <html lang="id" className="font-sans dark" data-theme="dark" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#f7f1e8" media="(prefers-color-scheme: light)" />
