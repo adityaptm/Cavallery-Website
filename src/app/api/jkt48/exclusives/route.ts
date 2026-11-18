@@ -6,6 +6,14 @@ import type {
   ExclusiveFlattenedItem,
 } from "@/types/jkt48";
 
+const ERINE_KEYS = ["erine", "catherina", "catherine", "vallencia", "valencia"];
+
+function isErineMember(name?: string): boolean {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return ERINE_KEYS.some((k) => lower.includes(k));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -43,22 +51,48 @@ export async function GET(req: NextRequest) {
 
     const sessions = Array.isArray(rawData?.sessions) ? rawData.sessions : [];
 
-    // Flatten logic sesuai petunjuk spesifikasi:
-    // sessions.flatMap(s => s.lanes.map(l => ({ session: s.label, startTime: s.start_time, member: l.member_name, status: l.status })))
-    const flattened: ExclusiveFlattenedItem[] = sessions.flatMap((s) => {
-      const lanes = Array.isArray(s?.lanes) ? s.lanes : [];
-      return lanes.map((l) => ({
+    // Filter KHUSUS Erine: Hanya sertakan lane milik Erine & sesi yang ada Erine
+    const erineSessions = sessions
+      .map((s) => {
+        const rawLanes = Array.isArray(s?.lanes) ? s.lanes : [];
+        const erineLanes = rawLanes.filter((l: any) => isErineMember(l.member_name));
+        return {
+          ...s,
+          lanes: erineLanes,
+        };
+      })
+      .filter((s) => s.lanes.length > 0);
+
+    // Flatten logic khusus Erine
+    const flattened: ExclusiveFlattenedItem[] = erineSessions.flatMap((s) => {
+      return (s.lanes || []).map((l: any) => ({
         session: s.label || "Sesi",
         startTime: s.start_time || "",
-        member: l.member_name || "Member",
+        member: l.member_name || "Catherina Vallencia",
         status: l.status || "available",
       }));
     });
 
+    // Hitung summary ketersediaan tiket khusus Erine
+    let erineAvailable = 0;
+    let erineSoldOut = 0;
+    for (const item of flattened) {
+      const st = (item.status || "").toLowerCase();
+      if (st.includes("sold") || st.includes("habis")) {
+        erineSoldOut++;
+      } else {
+        erineAvailable++;
+      }
+    }
+
     const responseData: Jkt48ExclusiveFlattenedResponse = {
       sales_status: rawData?.sales_status || "open",
-      summary: rawData?.summary,
-      sessions: sessions,
+      summary: {
+        total_sessions: erineSessions.length,
+        total_available: erineAvailable,
+        total_sold_out: erineSoldOut,
+      },
+      sessions: erineSessions,
       purchase_url: rawData?.purchase_url || "https://jkt48.com",
       flattened,
     };

@@ -60,9 +60,9 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
         <div className={styles.titleArea}>
           <i className="bx bx-purchase-tag-alt" />
           <div>
-            <h3>Status Stok Tiket Eksklusif</h3>
+            <h3>Status Stok Tiket Eksklusif Erine</h3>
             <span style={{ fontSize: "0.8rem", color: "var(--cv-text-dim)" }}>
-              ID Event: {exclusiveId}
+              Event ID: {exclusiveId} · Khusus Catherina Vallencia
             </span>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
             </div>
             {data.summary && (
               <div className={styles.purchaseSub}>
-                Tersedia: {data.summary.total_available ?? "-"} · Habis: {data.summary.total_sold_out ?? "-"} · Total Sesi: {data.summary.total_sessions ?? data.sessions.length}
+                Tersedia: {data.summary.total_available ?? "-"} · Habis: {data.summary.total_sold_out ?? "-"} · Sesi Erine: {data.summary.total_sessions ?? data.sessions.length}
               </div>
             )}
           </div>
@@ -139,7 +139,7 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
         <div className={styles.stateBox}>
           <i className={`bx bx-calendar-x ${styles.stateIcon}`} />
           <div className={styles.stateText}>
-            Tidak ada jadwal sesi eksklusif yang ditemukan untuk tanggal ini.
+            Tidak ada jadwal sesi eksklusif untuk Erine pada tanggal ini.
           </div>
         </div>
       ) : (
@@ -156,12 +156,10 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
 
                 <div className={styles.lanesList}>
                   {session.lanes.map((lane, lIdx) => {
-                    const isErine = lane.member_name?.toLowerCase().includes("erine") ||
-                                    lane.member_name?.toLowerCase().includes("catherina");
                     return (
                       <div key={lIdx} className={styles.laneItem}>
-                        <div className={`${styles.laneMember} ${isErine ? styles.laneMemberErine : ""}`}>
-                          {isErine && <i className="bx bxs-star" style={{ marginRight: "4px" }} />}
+                        <div className={`${styles.laneMember} ${styles.laneMemberErine}`}>
+                          <i className="bx bxs-star" style={{ marginRight: "4px" }} />
                           {lane.member_name}
                         </div>
                         {getStatusBadge(lane.status)}

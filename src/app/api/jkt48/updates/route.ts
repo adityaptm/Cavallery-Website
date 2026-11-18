@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { jkt48Fetch, Jkt48ApiError, isJkt48ApiKeyConfigured } from "@/lib/jkt48";
 import type { Jkt48SocialUpdate, Jkt48UpdatesResponse } from "@/types/jkt48";
 
-const ERINE_KEYS = ["erine", "catherina", "catherine", "vallencia", "valencia"];
+const ERINE_KEYS = [
+  "erine",
+  "catherina",
+  "catherine",
+  "vallencia",
+  "valencia",
+  "c_erinejkt48",
+  "jkt48.erine",
+];
 
-function checkIsErine(name?: string): boolean {
-  if (!name) return false;
-  const lower = name.toLowerCase();
-  return ERINE_KEYS.some((k) => lower.includes(k));
+function checkIsErine(member?: { name?: string; username?: string; slug?: string } | null, text?: string): boolean {
+  if (member) {
+    const combined = `${member.name || ""} ${member.username || ""} ${member.slug || ""}`.toLowerCase();
+    if (ERINE_KEYS.some((k) => combined.includes(k))) return true;
+  }
+  return false;
 }
 
 export async function GET(req: NextRequest) {
@@ -32,26 +42,38 @@ export async function GET(req: NextRequest) {
     let nextCursor: string | null = null;
     let hasMore = false;
 
-    // 1. Twitter / X Updates
+    // 1. Twitter / X Updates (Fokus Erine)
     if (platform === "all" || platform === "x") {
       try {
         const xData = await jkt48Fetch<any>(
           "/api/x/updates",
-          { after: cursor || undefined, limit },
+          { after: cursor || undefined, limit: 50 },
           { revalidate: 90 }
         );
         const list = Array.isArray(xData?.updates) ? xData.updates : [];
         for (const item of list) {
           const tweet = item.tweet || item;
-          const memberName = tweet.member?.name || tweet.user?.name || "JKT48";
+          const memberObj = tweet.member || {
+            name: tweet.user?.name,
+            username: tweet.user?.screen_name,
+            avatar: tweet.user?.profile_image_url,
+            slug: "",
+          };
+
+          // HANYA masukkan tweet milik Erine
+          if (!checkIsErine(memberObj, tweet.text)) {
+            continue;
+          }
+
+          const memberName = memberObj.name || "Catherina Vallencia";
           allUpdates.push({
             cursor: String(item.cursor || tweet.id || `x-${Math.random()}`),
             platform: "x",
             member: {
               name: memberName,
-              username: tweet.member?.username || tweet.user?.screen_name || "",
-              avatar: tweet.member?.avatar || tweet.user?.profile_image_url || "",
-              slug: tweet.member?.slug || "",
+              username: memberObj.username || "",
+              avatar: memberObj.avatar || "",
+              slug: memberObj.slug || "catherina-vallencia",
             },
             text: tweet.text || tweet.full_text || "",
             url: item.url || tweet.url || (tweet.id ? `https://x.com/i/status/${tweet.id}` : ""),
@@ -68,26 +90,38 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Instagram Updates
+    // 2. Instagram Updates (Fokus Erine)
     if (platform === "all" || platform === "instagram") {
       try {
         const igData = await jkt48Fetch<any>(
           "/api/instagram/updates",
-          { after: cursor || undefined, limit },
+          { after: cursor || undefined, limit: 50 },
           { revalidate: 90 }
         );
         const list = Array.isArray(igData?.updates) ? igData.updates : [];
         for (const item of list) {
           const post = item.post || item;
-          const memberName = post.member?.name || post.user?.username || "JKT48";
+          const memberObj = post.member || {
+            name: post.user?.username,
+            username: post.user?.username,
+            avatar: "",
+            slug: "",
+          };
+
+          // HANYA masukkan post Instagram milik Erine
+          if (!checkIsErine(memberObj, post.text)) {
+            continue;
+          }
+
+          const memberName = memberObj.name || "Catherina Vallencia";
           allUpdates.push({
             cursor: String(item.cursor || post.id || `ig-${Math.random()}`),
             platform: "instagram",
             member: {
               name: memberName,
-              username: post.member?.username || post.user?.username || "",
-              avatar: post.member?.avatar || "",
-              slug: post.member?.slug || "",
+              username: memberObj.username || "",
+              avatar: memberObj.avatar || "",
+              slug: memberObj.slug || "catherina-vallencia",
             },
             text: post.text || post.caption || "",
             url: item.url || post.url || (post.shortcode ? `https://instagram.com/p/${post.shortcode}` : ""),

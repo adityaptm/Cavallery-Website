@@ -130,7 +130,7 @@ export default function SocialUpdatesFeed() {
       <div className={styles.headerArea}>
         <div className={styles.titleArea}>
           <i className="bx bx-broadcast" />
-          <h3>Update Terbaru Erine & JKT48</h3>
+          <h3>Update Media Sosial Erine</h3>
         </div>
 
         {/* Tabs Filter */}
@@ -181,7 +181,7 @@ export default function SocialUpdatesFeed() {
         <div className={styles.stateBox}>
           <i className={`bx bx-message-square-dots ${styles.stateIcon}`} />
           <div className={styles.stateText}>
-            Belum ada pembaruan aktivitas untuk kategori ini.
+            Belum ada pembaruan media sosial Erine untuk platform ini.
           </div>
         </div>
       ) : (
