@@ -174,9 +174,13 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
                     <div key={lIdx} className={styles.memberLaneBox}>
                       <div className={styles.memberMetaLeft}>
                         <img
-                          src="https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"
+                          src="https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg"
                           alt="Catherina Vallencia"
                           className={styles.memberThumb}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+                          }}
                         />
                         <div className={styles.memberNameCol}>
                           <span className={styles.memberRealName}>

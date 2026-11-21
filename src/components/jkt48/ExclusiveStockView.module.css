@@ -1,5 +1,5 @@
 /* ================================================================
-   EXCLUSIVE STOCK VIEW — Luxury Ticket & Slot Checker
+   EXCLUSIVE STOCK VIEW — Luxury Dark & Gold VIP Ticket Checker
    ================================================================ */
 
 .container {
@@ -10,15 +10,15 @@
 
 /* ── 1. MAIN HEADER BANNER ───────────────────────────────────── */
 .mainCard {
-  background: #fbf7f0;
-  border: 1px solid rgba(255, 107, 26, 0.25);
+  background: linear-gradient(135deg, #1c1816 0%, #100d0b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 20px;
   padding: 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  color: #1c140e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.08);
+  color: #f5efe6;
 }
 
 .topBar {
@@ -40,14 +40,14 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background: rgba(220, 38, 38, 0.12);
-  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #dc2626;
+  color: #d4af37;
   width: fit-content;
 }
 
@@ -57,14 +57,14 @@
   line-height: 1.1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #1a1512;
+  color: #f5efe6;
   margin: 0;
 }
 
 .eventSub {
   font-size: 0.84rem;
   font-weight: 600;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.65));
 }
 
 /* Date Picker Control */
@@ -72,11 +72,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #ffffff;
-  border: 1px solid rgba(60, 45, 35, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   padding: 6px 12px;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .dateLabel {
@@ -84,7 +84,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #78716c;
+  color: #d4af37;
 }
 
 .dateInput {
@@ -93,7 +93,7 @@
   font-family: var(--cv-font-body, sans-serif);
   font-size: 0.85rem;
   font-weight: 700;
-  color: #1c140e;
+  color: #f5efe6;
   outline: none;
   cursor: pointer;
 }
@@ -116,11 +116,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  background: #ffffff;
-  border: 1px solid rgba(60, 45, 35, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(245, 239, 230, 0.1);
   border-radius: 14px;
   padding: 12px 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .pillsRow {
@@ -143,34 +142,34 @@
 }
 
 .pillOpen {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #16a34a;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #22c55e;
 }
 
 .pillOpenDot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #16a34a;
+  background: #22c55e;
 }
 
 .pillAvailable {
-  background: rgba(22, 163, 74, 0.1);
-  border: 1px solid rgba(22, 163, 74, 0.25);
-  color: #15803d;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
 }
 
 .pillSoldOut {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.25);
-  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #f87171;
 }
 
 .pillTotal {
-  background: #f5efe6;
-  border: 1px solid rgba(60, 45, 35, 0.15);
-  color: #57534e;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(245, 239, 230, 0.15);
+  color: #f5efe6;
 }
 
 .buyOfficialBtn {
@@ -204,21 +203,21 @@
 }
 
 .sessionTicket {
-  background: #ffffff;
-  border: 1px solid rgba(60, 45, 35, 0.12);
+  background: #181412;
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s, border-color 0.2s;
   position: relative;
 }
 
 .sessionTicket:hover {
   transform: translateY(-2px);
-  border-color: #dc2626;
+  border-color: #d4af37;
 }
 
 .sessionTopRow {
@@ -226,7 +225,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
-  border-bottom: 1px dashed rgba(60, 45, 35, 0.15);
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
 }
 
 .sessionLabelTag {
@@ -234,7 +233,7 @@
   font-size: 1.15rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #1a1512;
+  color: #f5efe6;
 }
 
 .sessionTimeChip {
@@ -243,14 +242,14 @@
   gap: 5px;
   font-size: 0.78rem;
   font-weight: 800;
-  color: #57534e;
-  background: #f5efe6;
+  color: #d4af37;
+  background: rgba(212, 175, 55, 0.12);
   padding: 3px 8px;
   border-radius: 6px;
 }
 
 .sessionTimeChip i {
-  color: #dc2626;
+  color: #d4af37;
 }
 
 /* Member Lane in Session */
@@ -259,10 +258,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: #fbf7f0;
-  border: 1px solid rgba(60, 45, 35, 0.08);
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
-  padding: 10px 12px;
 }
 
 .memberMetaLeft {
@@ -272,86 +270,65 @@
 }
 
 .memberThumb {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid #ef4444;
+  border: 1.5px solid #d4af37;
 }
 
 .memberNameCol {
   display: flex;
   flex-direction: column;
-  gap: 1px;
 }
 
 .memberRealName {
   font-size: 0.88rem;
   font-weight: 800;
-  color: #1c140e;
+  color: #f5efe6;
 }
 
 .memberSpecialStar {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  color: #dc2626;
+  color: #d4af37;
   display: inline-flex;
   align-items: center;
   gap: 3px;
 }
 
-/* High-Contrast Status Badges */
+/* Badges */
 .badgeHabis {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: #fee2e2;
-  border: 1px solid #f87171;
-  color: #991b1b;
-  font-size: 0.74rem;
+  gap: 4px;
+  background: rgba(220, 38, 38, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #f87171;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 6px;
+  text-transform: uppercase;
 }
 
 .badgeTersedia {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: #dcfce7;
-  border: 1px solid #86efac;
-  color: #166534;
-  font-size: 0.74rem;
+  gap: 4px;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 6px;
+  text-transform: uppercase;
 }
 
-/* States */
 .emptyNotice {
-  padding: 40px 20px;
+  padding: 30px;
   text-align: center;
-  background: #ffffff;
-  border: 1px dashed rgba(60, 45, 35, 0.2);
-  border-radius: 14px;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.6));
   font-size: 0.9rem;
-}
-
-@media (max-width: 640px) {
-  .topBar {
-    flex-direction: column;
-  }
-  .metricsStrip {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .buyOfficialBtn {
-    width: 100%;
-    justify-content: center;
-  }
 }

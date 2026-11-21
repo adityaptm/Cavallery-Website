@@ -54,14 +54,11 @@ const COLUMNS: FooterCol[] = [
   },
   {
     square: "g7",
-    title: "#GameRine",
+    title: "Project",
     links: [
-      { label: "Kuda Api Erine", href: "/games/knight-passion" },
-      { label: "Game Bibir Yang Telah Dicuri", href: "/games/jumping-adventure" },
-      { label: "Game Erine In Etherland", href: "/games/zombie-escape" },
-      { label: "Game Belalang Yang Membangkang", href: "/games/grasshopper-collector" },
-      { label: "Love Erine Meter", href: "/games/love-erine-meter" },
-      { label: "Dressup Erine", href: "/games/dress-up" },
+      { label: "Erine in Etherland", href: "/erine-in-etherland" },
+      { label: "Erine 100 Show", href: "/erine100show" },
+      { label: "SSK JKT48 2024", href: "/ssk" },
     ],
   },
 ];

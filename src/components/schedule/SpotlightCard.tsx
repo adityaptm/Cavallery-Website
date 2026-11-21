@@ -15,6 +15,20 @@ const MONTH_ABBR = [
   "JUL", "AGU", "SEP", "OKT", "NOV", "DES",
 ];
 
+function getMemberPhoto(m: any): string {
+  if (m.avatar && !m.avatar.includes("cava-logo") && !m.avatar.includes("undefined")) return m.avatar;
+  if (m.img && !m.img.includes("cava-logo") && !m.img.includes("undefined")) return m.img;
+  const name = (m.name || "").trim().toLowerCase();
+  if (name) {
+    const slug = name.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+  }
+  if (m.url_key) {
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${m.url_key.toLowerCase()}.jpg`;
+  }
+  return "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
+}
+
 export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
   // Parse date into stub components
   const { dayAbbr, dayNum, monthAbbr, yearNum } = useMemo(() => {
@@ -151,13 +165,14 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
               {displayOthers.map((m, idx) => (
                 <img
                   key={m.id || idx}
-                  src={m.avatar || m.img || "/images/cava-logo-round.png"}
+                  src={getMemberPhoto(m)}
                   alt={m.name}
                   className={styles.otherAvatar}
                   title={m.name}
                   loading="lazy"
                   onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = "/images/cava-logo-round.png";
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
                   }}
                 />
               ))}

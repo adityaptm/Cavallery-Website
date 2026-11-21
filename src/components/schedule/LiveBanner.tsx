@@ -70,19 +70,19 @@ export default function LiveBanner() {
           <span>STREAMING · ERINE</span>
         </div>
         <h2 className={styles.mainHeading}>
-          LIVE <span className={styles.mainHeadingHighlight}>STREAMING</span>
+          LIVE STREAMING
         </h2>
       </div>
 
-      {/* ── 1. TOP MAIN MEMBER CARD (Cream Paper) ── */}
+      {/* ── 1. TOP MAIN MEMBER CARD ── */}
       <div className={styles.topCard}>
         <img
-          src="https://images.jkt48connect.com/cavallery/images/2026/09/cf207d2f32384a39.jpg"
-          alt="Catherina Vallencia"
+          src="https://cdn.idn.media/idnaccount/avatar/500/d1cdcab90bc683da3f2e421af73c52b7.webp"
+          alt="Catherina Vallencia IDN Live"
           className={styles.memberPortrait}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src =
-              "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+              "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
           }}
         />
 

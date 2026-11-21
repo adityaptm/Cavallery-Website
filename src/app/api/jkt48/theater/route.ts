@@ -34,6 +34,20 @@ function isSpecialErineShow(title?: string): boolean {
   );
 }
 
+function getMemberAvatar(m: any): string {
+  if (m.img && !m.img.includes("cava-logo")) return m.img;
+  if (m.avatar && !m.avatar.includes("cava-logo")) return m.avatar;
+  const name = (m.name || "").trim().toLowerCase();
+  if (name) {
+    const slug = name.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+  }
+  if (m.url_key) {
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${m.url_key.toLowerCase()}.jpg`;
+  }
+  return "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
+}
+
 function calculateShowStatus(dateStr: string, timeStr: string): {
   status: "live" | "upcoming" | "completed";
   countdownText: string;
@@ -190,14 +204,17 @@ export async function GET(req: NextRequest) {
       const { status, countdownText } = calculateShowStatus(dateStr, timeStr);
 
       // Pastikan Erine berada di posisi pertama dalam deretan members
-      const formattedMembers: Jkt48TheaterMember[] = rawMembers.map((m: any) => ({
-        id: String(m.id || ""),
-        name: m.name || "",
-        url_key: m.url_key || "",
-        img: m.img || m.avatar || "",
-        avatar: m.img || m.avatar || "",
-        is_erine: isErineMember(m),
-      }));
+      const formattedMembers: Jkt48TheaterMember[] = rawMembers.map((m: any) => {
+        const photoUrl = getMemberAvatar(m);
+        return {
+          id: String(m.id || ""),
+          name: m.name || "",
+          url_key: m.url_key || "",
+          img: photoUrl,
+          avatar: photoUrl,
+          is_erine: isErineMember(m),
+        };
+      });
 
       // Urutkan Erine paling depan, lalu member lainnya
       formattedMembers.sort((a, b) => (b.is_erine ? 1 : 0) - (a.is_erine ? 1 : 0));

@@ -97,19 +97,8 @@ export default function ScheduleTimeline() {
 
   return (
     <div className={styles.timelineSection}>
-      {/* ── Top Header & Pill Filter Group ── */}
+      {/* ── Pill Filter Group ── */}
       <div className={styles.headerBar}>
-        <div className={styles.titleArea}>
-          <div className={styles.subLabel}>
-            <span className={styles.subLabelLine} />
-            <span>DETAIL JADWAL</span>
-          </div>
-          <h2 className={styles.mainHeading}>
-            SHOW <span className={styles.mainHeadingHighlight}>& EVENT</span>
-          </h2>
-        </div>
-
-        {/* Pill Group (Like Reference Design) */}
         <div className={styles.pillFilterGroup}>
           <button
             type="button"

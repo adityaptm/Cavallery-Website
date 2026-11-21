@@ -7,13 +7,13 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(12, 10, 9, 0.85);
+  background: rgba(12, 10, 9, 0.88);
   backdrop-filter: blur(8px);
-  z-index: 9999;
+  z-index: 99999;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: 40px 16px;
   overflow-y: auto;
   animation: fadeIn 0.2s ease-out;
 }
@@ -30,8 +30,7 @@
   border-radius: 24px;
   width: 100%;
   max-width: 840px;
-  max-height: 90vh;
-  overflow-y: auto;
+  margin: 0 auto;
   box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.85),
               0 0 40px rgba(220, 38, 38, 0.25);
   animation: slideUp 0.25s var(--cv-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
@@ -414,6 +413,106 @@
 .btnWhiteAction:hover {
   background: #f5efe6;
   border-color: #dc2626;
+}
+
+/* Top Gifters Grid */
+.giftersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.gifterCard {
+  background: #ffffff;
+  border: 1px solid rgba(60, 45, 35, 0.12);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gifterRank {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #dc2626;
+  width: 24px;
+}
+
+.gifterAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e7e5e4;
+}
+
+.gifterAvatarFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f5efe6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #78716c;
+}
+
+.gifterInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.gifterName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1c140e;
+}
+
+.gifterTotal {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #d4af37;
+}
+
+/* Stagelist Box */
+.stagelistBox {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(60, 45, 35, 0.12);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.stagelistItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #44403c;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.stagelistNum {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #dc2626;
+  width: 20px;
+  text-align: right;
+}
+
+.stagelistTitle {
+  font-weight: 600;
+}
+
+.leaderboardBannerImg {
+  width: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(60, 45, 35, 0.12);
 }
 
 @media (max-width: 600px) {

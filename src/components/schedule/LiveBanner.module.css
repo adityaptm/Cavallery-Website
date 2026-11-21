@@ -1,5 +1,5 @@
 /* ================================================================
-   LIVE STREAMING HUB — Matches Image 3 Reference
+   LIVE STREAMING HUB — Luxury Dark & Gold VIP Design
    Top Member Card with live clock + Stat boxes + Soundwave platform cards
    ================================================================ */
 
@@ -26,13 +26,13 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cv-text-dim, #a8a29e);
+  color: #d4af37;
 }
 
 .subLabelLine {
   width: 24px;
   height: 2px;
-  background: #dc2626;
+  background: #d4af37;
 }
 
 .mainHeading {
@@ -45,22 +45,17 @@
   margin: 0;
 }
 
-.mainHeadingHighlight {
-  color: #dc2626;
-  margin-left: 8px;
-}
-
-/* ── 1. TOP MEMBER LIVE CARD (Cream Paper Card) ──────────────── */
+/* ── 1. TOP MEMBER LIVE CARD (Dark Luxury VIP Card) ──────────── */
 .topCard {
-  background: #fbf7f0;
-  border: 1px solid rgba(255, 107, 26, 0.25);
+  background: linear-gradient(135deg, #1c1816 0%, #100d0b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 20px;
   padding: 24px;
   display: flex;
   gap: 24px;
   align-items: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  color: #1c140e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.08);
+  color: #f5efe6;
   position: relative;
   overflow: hidden;
 }
@@ -72,8 +67,8 @@
   object-fit: cover;
   object-position: top center;
   flex-shrink: 0;
-  border: 1.5px solid rgba(60, 45, 35, 0.15);
-  background: #f5efe6;
+  border: 1.5px solid rgba(212, 175, 55, 0.35);
+  background: #181412;
 }
 
 .memberMetaCol {
@@ -87,9 +82,9 @@
 .memberTag {
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #dc2626;
+  color: #d4af37;
 }
 
 .memberName {
@@ -98,7 +93,7 @@
   line-height: 1.05;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #1a1512;
+  color: #f5efe6;
   margin: 0;
 }
 
@@ -108,14 +103,14 @@
   gap: 6px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.7));
 }
 
 .dotGray {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #a8a29e;
+  background: #78716c;
 }
 
 .dotLiveRed {
@@ -141,21 +136,21 @@
 }
 
 .statBox {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(60, 45, 35, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 12px;
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   text-decoration: none;
-  color: inherit;
+  color: #f5efe6;
   transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .statBox:hover {
-  background: #ffffff;
-  border-color: #dc2626;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #d4af37;
   transform: translateY(-2px);
 }
 
@@ -163,10 +158,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  color: #d4af37;
 }
 
 .statValues {
@@ -183,7 +179,7 @@
 .statNum {
   font-size: 1.15rem;
   font-weight: 900;
-  color: #1c140e;
+  color: #f5efe6;
   line-height: 1;
 }
 
@@ -192,7 +188,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.6));
 }
 
 .liveClockRow {
@@ -201,11 +197,11 @@
   gap: 6px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.65));
 }
 
 .liveClockRow i {
-  color: #dc2626;
+  color: #d4af37;
   font-size: 0.95rem;
 }
 
@@ -217,16 +213,16 @@
 }
 
 .platformCard {
-  background: #fbf7f0;
-  border: 1px solid rgba(255, 107, 26, 0.25);
+  background: linear-gradient(135deg, #1c1816 0%, #100d0b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 20px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  color: #1c140e;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  color: #f5efe6;
 }
 
 .platformCardHeader {
@@ -262,7 +258,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.6));
 }
 
 .platformNameBig {
@@ -270,41 +266,41 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #1c140e;
+  color: #f5efe6;
 }
 
 .statusPillOffline {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(120, 113, 108, 0.12);
+  background: rgba(120, 113, 108, 0.2);
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #78716c;
+  color: rgba(245, 239, 230, 0.6);
 }
 
 .statusPillLive {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(220, 38, 38, 0.2);
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #dc2626;
+  color: #ef4444;
 }
 
 /* Soundwave Card Body */
 .soundwaveBox {
-  background: linear-gradient(135deg, rgba(254, 226, 226, 0.6) 0%, rgba(255, 237, 213, 0.4) 100%);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   border-radius: 14px;
   padding: 18px 20px;
   display: flex;
@@ -323,8 +319,8 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,13 +338,13 @@
   font-size: 1.15rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #1a1512;
+  color: #f5efe6;
   margin: 0;
 }
 
 .soundwaveCaption {
   font-size: 0.76rem;
-  color: #78716c;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.65));
   font-weight: 600;
 }
 
@@ -362,7 +358,7 @@
 
 .equalizerBar {
   width: 3px;
-  background: #f87171;
+  background: #d4af37;
   border-radius: 3px;
   animation: equalizerBounce 1.2s infinite ease-in-out;
 }
@@ -389,18 +385,19 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-top: 1px solid rgba(60, 45, 35, 0.08);
+  border-top: 1px solid rgba(245, 239, 230, 0.1);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #1c140e;
+  color: #d4af37;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .visitBtn:hover {
-  color: #dc2626;
+  color: #ffffff;
+  transform: translateX(2px);
 }
 
 @media (max-width: 768px) {

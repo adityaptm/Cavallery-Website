@@ -127,7 +127,7 @@ export default function ScheduleSocialFeed() {
                 <div className={styles.cardTop}>
                   <div className={styles.userMeta}>
                     <img
-                      src={item.member.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
+                      src={item.member.avatar || "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg"}
                       alt={item.member.name}
                       className={styles.userAvatar}
                     />

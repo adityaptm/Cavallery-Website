@@ -37,9 +37,10 @@ export async function GET(
     let recordings: Jkt48Recording[] = [];
     let screenshots: string[] = [];
     let leaderboardBanner: { status: string; url?: string } | null = null;
-    let liveDetail: any = null;
+    let topGifters: any[] = [];
+    let stagelist: any[] = [];
 
-    // 2. Jika API Key terkonfigurasi, coba ambil data rekaman dan screenshot dari JKT48 Connect
+    // 2. Jika API Key terkonfigurasi, coba ambil data rekaman, screenshot, gifts, stagelist
     if (isJkt48ApiKeyConfigured()) {
       try {
         // Ambil rekaman teater
@@ -66,16 +67,48 @@ export async function GET(
         if (Array.isArray(screenData?.screenshots)) {
           screenshots = screenData.screenshots;
         } else if (screenData?.screenshot?.base_url && Array.isArray(screenData?.screenshot?.list)) {
-          const { base_url, list, format = "jpg" } = screenData.screenshot;
-          screenshots = list.map((time: any) => `${base_url}/${time}.${format}`);
+          const { base_url, list: sList, format = "jpg" } = screenData.screenshot;
+          screenshots = sList.map((time: any) => `${base_url}/${time}.${format}`);
         }
       } catch {}
 
-      // Coba ambil recent live info jika ada DATA_ID
+      // Coba ambil recent live info
       try {
         const recentData = await jkt48Fetch<any>(`/api/recent/${encodeURIComponent(decodedId)}`, {}, { revalidate: 600 });
         if (recentData?.leaderboard_designs?.jkt48connect?.banner) {
           leaderboardBanner = recentData.leaderboard_designs.jkt48connect.banner;
+        }
+      } catch {}
+
+      // Coba ambil top gifters
+      try {
+        const giftsData = await jkt48Fetch<any>(`/api/recent/${encodeURIComponent(decodedId)}/gifts`, {}, { revalidate: 600 });
+        if (Array.isArray(giftsData?.gifts)) {
+          topGifters = giftsData.gifts.slice(0, 10).map((g: any) => ({
+            name: g.name || g.user?.name || "Fans",
+            avatar: g.avatar || g.user?.avatar_url || "",
+            total: g.total || g.amount || 0,
+            count: g.count || 1,
+          }));
+        } else if (Array.isArray(giftsData)) {
+          topGifters = giftsData.slice(0, 10).map((g: any) => ({
+            name: g.name || g.user?.name || "Fans",
+            avatar: g.avatar || g.user?.avatar_url || "",
+            total: g.total || g.amount || 0,
+            count: g.count || 1,
+          }));
+        }
+      } catch {}
+
+      // Coba ambil stagelist / setlist
+      try {
+        const stageData = await jkt48Fetch<any>(`/api/recent/${encodeURIComponent(decodedId)}/stagelist`, {}, { revalidate: 600 });
+        if (Array.isArray(stageData?.stagelist)) {
+          stagelist = stageData.stagelist;
+        } else if (Array.isArray(stageData?.songs)) {
+          stagelist = stageData.songs;
+        } else if (Array.isArray(stageData)) {
+          stagelist = stageData;
         }
       } catch {}
     }
@@ -87,6 +120,8 @@ export async function GET(
         recordings,
         screenshots,
         leaderboard_banner: leaderboardBanner,
+        top_gifters: topGifters,
+        stagelist,
       },
     });
   } catch (error: any) {
