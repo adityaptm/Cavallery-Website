@@ -1,0 +1,84 @@
+.skeletonCard {
+  background: var(--cv-ink-2);
+  border: 1px solid var(--cv-line);
+  border-radius: var(--cv-radius-lg, 20px);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 24px;
+  min-height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 107, 26, 0.06) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.8s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.leftStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.barChip {
+  width: 140px;
+  height: 24px;
+  border-radius: var(--cv-radius-pill, 999px);
+  background: var(--cv-ink-3);
+}
+
+.barTitle {
+  width: 75%;
+  height: 36px;
+  border-radius: var(--cv-radius-sm, 10px);
+  background: var(--cv-ink-3);
+}
+
+.barLocation {
+  width: 45%;
+  height: 18px;
+  border-radius: var(--cv-radius-xs, 6px);
+  background: var(--cv-ink-3);
+}
+
+.barAvatars {
+  width: 180px;
+  height: 32px;
+  border-radius: var(--cv-radius-pill, 999px);
+  background: var(--cv-ink-3);
+  margin-top: 10px;
+}
+
+.rightBox {
+  width: 160px;
+  height: 100%;
+  border-radius: var(--cv-radius, 14px);
+  background: var(--cv-ink-3);
+  justify-self: center;
+}
+
+@media (max-width: 768px) {
+  .skeletonCard {
+    grid-template-columns: 1fr;
+  }
+  .rightBox {
+    display: none;
+  }
+}

@@ -1,0 +1,267 @@
+/* ================================================================
+   SCHEDULE TIMELINE — Vertical Timeline Layout
+   Garis timeline vertikal tipis di sisi kiri halaman,
+   Spotlight Card per agenda show Erine, filter bulan & status.
+   ================================================================ */
+
+.timelineSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Controls Bar: Filter Bulan & Status */
+.controlsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--cv-ink-2);
+  border: 1px solid var(--cv-line);
+  border-radius: var(--cv-radius, 14px);
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cv-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+
+.statusTabs {
+  display: flex;
+  background: var(--cv-ink-1);
+  padding: 3px;
+  border-radius: var(--cv-radius-pill, 999px);
+  border: 1px solid var(--cv-line);
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  color: var(--cv-text-dim);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--cv-radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--cv-bone);
+}
+
+.tabBtnActive {
+  background: var(--cv-orange);
+  color: #140b05 !important;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(255, 107, 26, 0.4);
+}
+
+.monthSelect {
+  background: var(--cv-ink-1);
+  border: 1px solid var(--cv-line-strong);
+  color: var(--cv-bone);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: var(--cv-radius-pill, 999px);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.monthSelect:focus {
+  border-color: var(--cv-orange);
+}
+
+/* Timeline Layout */
+.timelineContainer {
+  position: relative;
+  padding-left: 36px;
+}
+
+/* Garis Timeline Vertikal Tipis di Sisi Kiri */
+.timelineLine {
+  position: absolute;
+  top: 12px;
+  bottom: 24px;
+  left: 11px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--cv-orange) 0%,
+    rgba(255, 107, 26, 0.3) 50%,
+    rgba(245, 239, 230, 0.06) 100%
+  );
+  border-radius: 2px;
+}
+
+.timelineGroup {
+  margin-bottom: 36px;
+}
+
+.groupHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Titik Marker Timeline */
+.timelineNode {
+  position: absolute;
+  left: -36px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cv-ink-1);
+  border: 2px solid var(--cv-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(255, 107, 26, 0.4);
+}
+
+.nodeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cv-orange);
+}
+
+.groupTitle {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cv-bone);
+  margin: 0;
+}
+
+.cardsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 60px 24px;
+  text-align: center;
+  background: var(--cv-ink-2);
+  border: 1px dashed var(--cv-line-strong);
+  border-radius: var(--cv-radius-lg, 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  color: var(--cv-orange);
+  opacity: 0.7;
+}
+
+.emptyTitle {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 1.4rem;
+  color: var(--cv-bone);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.emptyText {
+  color: var(--cv-text-dim);
+  font-size: 0.95rem;
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.resetBtn {
+  background: rgba(255, 107, 26, 0.15);
+  border: 1px solid var(--cv-orange-line);
+  color: var(--cv-orange);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+  border-radius: var(--cv-radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 6px;
+}
+
+.resetBtn:hover {
+  background: var(--cv-orange);
+  color: #140b05;
+}
+
+/* Error State */
+.errorBox {
+  padding: 30px;
+  text-align: center;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--cv-radius-lg, 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.errorText {
+  color: #f87171;
+  font-size: 0.95rem;
+}
+
+.retryBtn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+  border-radius: var(--cv-radius-pill, 999px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .timelineContainer {
+    padding-left: 20px;
+  }
+  .timelineLine {
+    left: 4px;
+  }
+  .timelineNode {
+    left: -20px;
+    width: 18px;
+    height: 18px;
+  }
+  .nodeDot {
+    width: 6px;
+    height: 6px;
+  }
+  .controlsBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

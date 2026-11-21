@@ -1,65 +1,89 @@
 import type { Metadata } from "next";
 import styles from "./page.module.css";
-import { TheaterSection, LiveSection, VideoCallSection } from "@/components/schedule/ScheduleSections";
+import LiveBanner from "@/components/schedule/LiveBanner";
+import ScheduleTimeline from "@/components/schedule/ScheduleTimeline";
+import ScheduleSocialFeed from "@/components/schedule/ScheduleSocialFeed";
+import { VideoCallSection } from "@/components/schedule/ScheduleSections";
 import ScheduleCalendarView from "@/components/jkt48/ScheduleCalendarView";
 import ExclusiveStockView from "@/components/jkt48/ExclusiveStockView";
 
 export const metadata: Metadata = {
-  title: "Jadwal Show & Event",
-  description: "Jadwal lengkap Erine JKT48: Theater, Live, dan Video Call dalam satu halaman.",
+  title: "Jadwal Show & Event Erine JKT48",
+  description:
+    "Jadwal lengkap show theater, live streaming, dan kegiatan resmi Catherina Vallencia (Erine) JKT48.",
 };
 
 export default function SchedulePage() {
   return (
     <div className={styles.page}>
-      {/* Header */}
+      {/* Header Hero */}
       <div className={styles.hero}>
         <div className={styles.heroBg} />
         <div className={styles.heroInner}>
-          <div className="badge"><i className="bx bx-time-five" /> #ErineSchedule</div>
-          <h1 className={styles.heroTitle}>Erine <span className="textGold">Schedule</span></h1>
+          <div className="badge">
+            <i className="bx bx-time-five" /> #ErineSchedule
+          </div>
+          <h1 className={styles.heroTitle}>
+            Erine <span className="textGold">Schedule</span>
+          </h1>
           <p className={styles.heroSub}>
-            Semua jadwal kegiatan Erine JKT48 dalam satu tempat. 
-            Mulai dari agenda bulanan, show theater, sesi live, hingga ketersediaan tiket eksklusif.
+            Pusat jadwal resmi seluruh aktivitas show theater, siaran live streaming,
+            dan tiket eksklusif Catherina Vallencia (Erine JKT48).
           </p>
         </div>
       </div>
 
       <div className={styles.content}>
-        {/* Kalender Bulanan & Agenda JKT48 Connect */}
-        <section>
-          <div style={{ marginBottom: "1rem" }}>
-            <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Kalender <span style={{ color: "var(--cv-orange)" }}>Kegiatan JKT48</span>
+        {/* Panel Notifikasi Siaran Langsung (Muncul jika Erine sedang Live) */}
+        <LiveBanner />
+
+        {/* Section Utama: Jadwal Show Teater Erine (Spotlight Card & Timeline) */}
+        <section id="theater-erine">
+          <div style={{ marginBottom: "1.2rem" }}>
+            <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
+              Jadwal Show <span style={{ color: "var(--cv-orange)" }}>Theater Erine</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
-              Agenda jadwal resmi dari JKT48 Connect yang disinkronisasikan secara otomatis.
+              Daftar seluruh show teater resmi JKT48 yang menampilkan Erine dalam lineup panggung.
             </p>
           </div>
-          <ScheduleCalendarView />
+
+          <ScheduleTimeline />
         </section>
 
-        {/* Live Section (Priority if active) */}
-        <LiveSection />
-
-        {/* Video Call Section */}
-        <VideoCallSection />
-
-        {/* Stok Eksklusif JKT48 Connect */}
-        <section>
-          <div style={{ marginBottom: "1rem" }}>
-            <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Status Tiket <span style={{ color: "var(--cv-orange)" }}>Eksklusif</span>
+        {/* Section: Stok Tiket Eksklusif Erine */}
+        <section id="exclusive-stock">
+          <div style={{ marginBottom: "1.2rem" }}>
+            <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
+              Status Tiket <span style={{ color: "var(--cv-orange)" }}>Eksklusif Erine</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
-              Pantau ketersediaan slot sesi eksklusif dan 2-Shot/VC secara langsung.
+              Pantau ketersediaan slot sesi eksklusif dan 2-Shot Erine secara langsung.
             </p>
           </div>
           <ExclusiveStockView exclusiveId="EX79CB" />
         </section>
 
-        {/* Theater Section */}
-        <TheaterSection />
+        {/* Section: Kalender Bulanan & Agenda JKT48 Connect */}
+        <section id="calendar-view">
+          <div style={{ marginBottom: "1.2rem" }}>
+            <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
+              Kalender <span style={{ color: "var(--cv-orange)" }}>Agenda JKT48</span>
+            </h2>
+            <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
+              Kalender bulanan seluruh agenda resmi dari JKT48 Connect.
+            </p>
+          </div>
+          <ScheduleCalendarView />
+        </section>
+
+        {/* Section: Update Sosmed Erine */}
+        <section id="social-feed">
+          <ScheduleSocialFeed />
+        </section>
+
+        {/* Section: Jadwal Video Call */}
+        <VideoCallSection />
       </div>
     </div>
   );

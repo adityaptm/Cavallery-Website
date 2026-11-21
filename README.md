@@ -80,20 +80,25 @@ Dibangun menggunakan **Next.js (App Router)**, **React 19**, **TypeScript**, dan
 
 ## 📋 Fitur Integrasi JKT48 Connect
 
-1. **Jadwal Kegiatan & Kalender Bulanan (`/schedule`):**
-   - Menampilkan kalender bulanan interaktif dan daftar agenda kegiatan.
-   - Dropdown pemilihan periode bulan dari `available_periods`.
-   - Highlight khusus untuk agenda kegiatan Erine.
-2. **Status Stok Tiket Eksklusif (`/schedule`):**
-   - Live checker status tiket 2-Shot / Video Call event eksklusif (default `EX79CB`).
+1. **Jadwal Show Theater Khusus Erine (`/schedule`):**
+   - **Spotlight Card**: Konsep kartu panggung/poster horizontal baru dengan foto portrait Erine menonjol (overlap), efek radial spotlight hangat, chip tanggal horizontal (`KAM · 19 NOV · 19.00 WIB`), badge status live/akan datang/selesai, serta stack avatar lineup dengan Erine selalu di posisi pertama (highlight star).
+   - **Hero Show Terdekat**: Kartu hero panggung khusus untuk show Erine berikutnya yang paling dekat.
+   - **Timeline Vertikal**: Garis timeline tipis di sisi kiri dengan pengelompokan per bulan, filter status (Semua / Akan Datang / Selesai), dan dropdown pemilih bulan.
+   - **Modal Detail Show**: Desain poster header dengan gradient Cavallery, kartu sorotan Erine di atas lineup, grid member lain seragam, pemutar rekaman video (YouTube / HLS .m3u8), galeri screenshot carousel, dan banner rekap leaderboard.
+   - **Filter Server-Side 100% Khusus Erine**: Hanya menampilkan show yang lineup-nya memuat Erine (Catherina Vallencia). Show tanpa Erine disaring sepenuhnya di server.
+
+2. **Panel Live Erine Real-Time (`/schedule`):**
+   - Notifikasi banner otomatis saat Erine sedang melangsungkan siaran langsung di Showroom atau IDN Live.
+   - Banner notifikasi resmi jika desain banner statusnya `ready`.
+
+3. **Status Stok Tiket Eksklusif Erine (`/schedule`):**
+   - Live checker status tiket 2-Shot / Video Call event eksklusif (default `EX79CB`) difilter khusus sesi dan kuota Erine.
    - Badge status semantik (Tersedia / Hampir Habis / Habis).
-   - Tautan langsung ke halaman pembelian resmi.
-3. **Live Streaming Hub (`/live`):**
-   - Monitoring siaran langsung IDN Live & Showroom secara real-time.
-   - Indikator deteksi status siaran Erine.
-   - Stream komentar real-time dengan auto-scroll dan deteksi tab aktif (pause otomatis saat tab background).
-   - Galeri rekap banner dan screenshot live.
-4. **Update Media Sosial Erine (`/about/erine`):**
-   - Feed multi-platform: Semua, X (Twitter), Instagram, dan TikTok Erine.
-   - Paginasi berbasis cursor yang disimpan di `localStorage` per user.
-   - Desain kartu responsif dengan teks 4-baris clamp dan link ke post asli.
+   - Tautan langsung ke halaman pembelian resmi official JKT48.
+
+4. **Kalender Kegiatan JKT48 Connect (`/schedule`):**
+   - Menampilkan kalender bulanan interaktif dan daftar agenda kegiatan resmi dari JKT48 Connect.
+
+5. **Aktivitas Media Sosial Erine (`/schedule` & `/about/erine`):**
+   - Feed multi-platform kompak (X, Instagram, TikTok) khusus akun resmi Erine.
+   - Kartu kecil responsif dengan clamp 3 baris, waktu relatif, dan link langsung ke post asli.

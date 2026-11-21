@@ -4,6 +4,50 @@
 // ============================================================
 
 // --- 1. JADWAL (Schedule) ---
+export interface Jkt48TheaterMember {
+  id: string | number;
+  name: string;
+  url_key?: string;
+  img?: string;
+  avatar?: string;
+  is_erine?: boolean;
+}
+
+export interface Jkt48Recording {
+  id?: string;
+  title?: string;
+  status?: "uploaded" | "processing" | "pending" | string;
+  youtube_url?: string;
+  stream_url?: string; // HLS (.m3u8)
+  date?: string;
+}
+
+export interface Jkt48TheaterShow {
+  id: string;
+  schedule_id?: string;
+  title: string;
+  date: string; // ISO string
+  showDate?: string;
+  startTime: string; // HH:mm
+  endTime?: string;
+  team?: string;
+  location?: string;
+  poster?: string;
+  banner?: string;
+  url?: string;
+  is_erine: boolean;
+  is_special?: boolean; // seitansai / birthday / spotlight
+  status: "live" | "upcoming" | "completed";
+  countdownText?: string;
+  members: Jkt48TheaterMember[];
+  recordings?: Jkt48Recording[];
+  screenshots?: string[];
+  leaderboard_banner?: {
+    status: string;
+    url?: string;
+  };
+}
+
 export interface Jkt48ScheduleEvent {
   id?: string | number;
   title: string;

@@ -1,0 +1,167 @@
+/* ================================================================
+   SCHEDULE SOCIAL FEED — Compact Erine Social Updates
+   Feed kompak khusus Erine dengan tabs (Semua, X, Instagram, TikTok),
+   kartu kecil dengan ikon platform, teks clamp 3 baris, waktu relatif.
+   ================================================================ */
+
+.feedSection {
+  background: var(--cv-ink-2);
+  border: 1px solid var(--cv-line);
+  border-radius: var(--cv-radius-lg, 20px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feedHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--cv-line);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleGroup i {
+  color: var(--cv-orange);
+  font-size: 1.4rem;
+}
+
+.sectionTitle {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cv-bone);
+  margin: 0;
+}
+
+.tabsRow {
+  display: flex;
+  background: var(--cv-ink-1);
+  padding: 3px;
+  border-radius: var(--cv-radius-pill, 999px);
+  border: 1px solid var(--cv-line);
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--cv-text-dim);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--cv-radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabBtnActive {
+  background: var(--cv-orange);
+  color: #140b05 !important;
+  font-weight: 800;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.postCard {
+  background: var(--cv-ink-1);
+  border: 1px solid var(--cv-line);
+  border-radius: var(--cv-radius, 14px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.postCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--cv-orange-line);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.userMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--cv-orange);
+}
+
+.userName {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cv-bone);
+}
+
+.userHandle {
+  font-size: 0.72rem;
+  color: var(--cv-text-mute);
+}
+
+.platformIcon {
+  font-size: 1.2rem;
+}
+
+.iconX { color: #1da1f2; }
+.iconIg { color: #e1306c; }
+.iconTt { color: #fe2c55; }
+
+.postText {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--cv-text-dim);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: var(--cv-text-mute);
+  padding-top: 8px;
+  border-top: 1px solid rgba(245, 239, 230, 0.05);
+  margin-top: auto;
+}
+
+.viewLink {
+  color: var(--cv-orange);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
