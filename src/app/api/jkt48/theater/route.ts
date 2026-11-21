@@ -13,8 +13,12 @@ const ERINE_IDENTIFIERS = [
   "44",
 ];
 
-function isErineMember(m: { id?: string | number; name?: string; url_key?: string }): boolean {
+function isErineMember(m: any): boolean {
   if (!m) return false;
+  if (typeof m === "string") {
+    const s = m.toLowerCase();
+    return ERINE_IDENTIFIERS.some((key) => s.includes(key));
+  }
   if (String(m.id) === "44") return true;
   const name = (m.name || "").toLowerCase();
   const urlKey = (m.url_key || "").toLowerCase();
@@ -35,14 +39,18 @@ function isSpecialErineShow(title?: string): boolean {
 }
 
 function getMemberAvatar(m: any): string {
-  if (m.img && !m.img.includes("cava-logo")) return m.img;
-  if (m.avatar && !m.avatar.includes("cava-logo")) return m.avatar;
-  const name = (m.name || "").trim().toLowerCase();
+  if (typeof m === "string") {
+    const slug = m.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+  }
+  if (m?.img && !m.img.includes("cava-logo") && !m.img.includes("undefined")) return m.img;
+  if (m?.avatar && !m.avatar.includes("cava-logo") && !m.avatar.includes("undefined")) return m.avatar;
+  const name = (m?.name || "").trim().toLowerCase();
   if (name) {
     const slug = name.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
     return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
   }
-  if (m.url_key) {
+  if (m?.url_key) {
     return `https://jkt48.com/api/v1/storages/media/jkt48-member/${m.url_key.toLowerCase()}.jpg`;
   }
   return "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
@@ -205,11 +213,12 @@ export async function GET(req: NextRequest) {
 
       // Pastikan Erine berada di posisi pertama dalam deretan members
       const formattedMembers: Jkt48TheaterMember[] = rawMembers.map((m: any) => {
+        const rawName = typeof m === "string" ? m : m?.name || "";
         const photoUrl = getMemberAvatar(m);
         return {
-          id: String(m.id || ""),
-          name: m.name || "",
-          url_key: m.url_key || "",
+          id: typeof m === "object" && m?.id ? String(m.id) : rawName,
+          name: rawName,
+          url_key: typeof m === "object" ? m?.url_key || "" : "",
           img: photoUrl,
           avatar: photoUrl,
           is_erine: isErineMember(m),

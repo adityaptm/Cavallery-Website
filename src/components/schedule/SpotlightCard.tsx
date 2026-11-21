@@ -16,14 +16,18 @@ const MONTH_ABBR = [
 ];
 
 function getMemberPhoto(m: any): string {
-  if (m.avatar && !m.avatar.includes("cava-logo") && !m.avatar.includes("undefined")) return m.avatar;
-  if (m.img && !m.img.includes("cava-logo") && !m.img.includes("undefined")) return m.img;
-  const name = (m.name || "").trim().toLowerCase();
+  if (typeof m === "string") {
+    const slug = m.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+  }
+  if (m?.avatar && !m.avatar.includes("cava-logo") && !m.avatar.includes("undefined")) return m.avatar;
+  if (m?.img && !m.img.includes("cava-logo") && !m.img.includes("undefined")) return m.img;
+  const name = (m?.name || "").trim().toLowerCase();
   if (name) {
     const slug = name.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
     return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
   }
-  if (m.url_key) {
+  if (m?.url_key) {
     return `https://jkt48.com/api/v1/storages/media/jkt48-member/${m.url_key.toLowerCase()}.jpg`;
   }
   return "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
@@ -152,6 +156,7 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
                 src={erineMember.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
                 alt="Erine"
                 className={styles.erineAvatar}
+                referrerPolicy="no-referrer"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src =
                     "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
@@ -162,20 +167,31 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
 
             {/* Other Member Avatars */}
             <div className={styles.avatarStack}>
-              {displayOthers.map((m, idx) => (
-                <img
-                  key={m.id || idx}
-                  src={getMemberPhoto(m)}
-                  alt={m.name}
-                  className={styles.otherAvatar}
-                  title={m.name}
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
-                  }}
-                />
-              ))}
+              {displayOthers.map((m, idx) => {
+                const memberName = typeof m === "string" ? m : m?.name || `Member ${idx + 1}`;
+                const rawName = typeof m === "string" ? m : m?.name || "";
+                const slug = rawName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+
+                return (
+                  <img
+                    key={m.id || idx}
+                    src={getMemberPhoto(m)}
+                    alt={memberName}
+                    className={styles.otherAvatar}
+                    title={memberName}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const imgEl = e.currentTarget as HTMLImageElement;
+                      if (slug && !imgEl.src.includes("/api/jkt48/member-photo")) {
+                        imgEl.src = `/api/jkt48/member-photo/${slug}`;
+                      } else {
+                        imgEl.src = "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+                      }
+                    }}
+                  />
+                );
+              })}
 
               {remainingCount > 0 && (
                 <span className={styles.moreMembersPill}>+{remainingCount}</span>

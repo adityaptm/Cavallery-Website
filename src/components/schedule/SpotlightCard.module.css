@@ -1,6 +1,6 @@
 /* ================================================================
-   VIP THEATER TICKET CARD — Premium Black & Gold Design
-   Inspired by luxury VIP ticket stub with gold accents
+   VIP THEATER TICKET CARD — Premium Black & Cavallery Orange Design
+   Inspired by luxury VIP ticket stub with warm orange accents
    ================================================================ */
 
 .ticketWrapper {
@@ -10,21 +10,21 @@
   border-radius: 16px;
   overflow: visible;
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
-  transition: transform 0.22s ease-out, filter 0.22s ease-out;
+  transition: transform 0.22s ease-out, filter 0.22s ease-out, border-color 0.22s ease-out;
   cursor: pointer;
   text-decoration: none;
   background: linear-gradient(135deg, #1a1512 0%, #0c0a09 100%);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid rgba(255, 107, 26, 0.35);
 }
 
 .ticketWrapper:hover {
   transform: translateY(-4px);
-  filter: drop-shadow(0 14px 32px rgba(212, 175, 55, 0.25));
-  border-color: rgba(212, 175, 55, 0.6);
+  filter: drop-shadow(0 14px 32px rgba(255, 107, 26, 0.25));
+  border-color: rgba(255, 107, 26, 0.65);
 }
 
 .ticketWrapper:focus-visible {
-  outline: 2px solid #d4af37;
+  outline: 2px solid var(--cv-orange, #ff6b1a);
   outline-offset: 4px;
 }
 
@@ -33,17 +33,17 @@
   .ticketWrapper:hover { transform: none; }
 }
 
-/* ── 1. LEFT STUB (Gold Date Column) ─────────────────────────── */
+/* ── 1. LEFT STUB (Orange Date Column) ─────────────────────────── */
 .stubLeft {
   flex: 0 0 100px;
-  background: linear-gradient(180deg, #d4af37 0%, #b8942e 50%, #8b6914 100%);
+  background: linear-gradient(180deg, #ff7828 0%, #ff5500 50%, #c43800 100%);
   border-radius: 16px 0 0 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 18px 8px;
-  color: #0c0a09;
+  color: #ffffff;
   position: relative;
   user-select: none;
 }
@@ -54,16 +54,16 @@
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1a1512;
+  color: #ffffff;
 }
 
 .stubNumber {
   font-family: var(--cv-font-display, "Anton", sans-serif);
   font-size: 2.6rem;
   line-height: 1;
-  color: #0c0a09;
+  color: #ffffff;
   margin: 2px 0;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 .stubMonthYear {
@@ -72,7 +72,7 @@
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(26, 21, 18, 0.7);
+  color: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -112,7 +112,7 @@
   min-width: 0;
   background: linear-gradient(135deg, #1c1816 0%, #0f0d0b 100%);
   border-radius: 0 16px 16px 0;
-  border-left: 1px dashed rgba(212, 175, 55, 0.25);
+  border-left: 1px dashed rgba(255, 107, 26, 0.3);
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
@@ -135,15 +135,15 @@
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(255, 107, 26, 0.15);
+  border: 1px solid rgba(255, 107, 26, 0.35);
   border-radius: 999px;
   font-family: var(--cv-font-body, sans-serif);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .statusPill {
@@ -222,7 +222,7 @@
 }
 
 .infoItem i {
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   font-size: 0.9rem;
 }
 
@@ -230,7 +230,7 @@
 .perforatedLine {
   width: 100%;
   height: 1px;
-  border-top: 1.5px dashed rgba(212, 175, 55, 0.2);
+  border-top: 1.5px dashed rgba(255, 107, 26, 0.25);
   margin: 2px 0;
 }
 
@@ -253,14 +253,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  background: rgba(255, 107, 26, 0.15);
+  border: 1.5px solid rgba(255, 107, 26, 0.45);
   border-radius: 999px;
   padding: 3px 10px 3px 3px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   text-transform: uppercase;
 }
 
@@ -269,7 +269,7 @@
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid #d4af37;
+  border: 1.5px solid var(--cv-orange, #ff6b1a);
 }
 
 /* Other Members Avatar Stack */
@@ -299,11 +299,11 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(255, 107, 26, 0.15);
   border: 1.5px solid #1c1816;
   font-size: 0.65rem;
   font-weight: 800;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   margin-left: -6px;
 }
 
@@ -312,9 +312,9 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  color: #d4af37;
+  background: rgba(255, 107, 26, 0.15);
+  border: 1px solid rgba(255, 107, 26, 0.35);
+  color: var(--cv-orange, #ff6b1a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -324,15 +324,15 @@
 }
 
 .ticketWrapper:hover .arrowBtn {
-  background: #d4af37;
-  color: #0c0a09;
+  background: var(--cv-orange, #ff6b1a);
+  color: #ffffff;
   transform: translateX(3px);
 }
 
 /* Special Seitansai / Birthday Badge */
 .specialBadge {
-  background: linear-gradient(135deg, #d4af37, #f5d678) !important;
-  color: #1a1512 !important;
+  background: linear-gradient(135deg, #ff6b1a, #ff9248) !important;
+  color: #ffffff !important;
   border: none !important;
 }
 
@@ -363,7 +363,7 @@
   .ticketBody {
     border-radius: 0 0 16px 16px;
     border-left: none;
-    border-top: 1px dashed rgba(212, 175, 55, 0.2);
+    border-top: 1px dashed rgba(255, 107, 26, 0.25);
     padding: 14px 16px;
   }
 }

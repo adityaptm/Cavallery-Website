@@ -344,7 +344,7 @@ export default function ScheduleCalendarView() {
             <div className={styles.showsShowcase}>
               <div className={styles.showcaseHeader}>
                 <h4 className={styles.showcaseTitle}>
-                  <i className="bx bx-film" style={{ color: "#d4af37" }} />
+                  <i className="bx bx-film" style={{ color: "var(--cv-orange, #ff6b1a)" }} />
                   <span>Jadwal Show Theater Bulan Ini ({monthlyShows.length})</span>
                 </h4>
               </div>
@@ -357,6 +357,7 @@ export default function ScheduleCalendarView() {
                       alt={s.title}
                       className={styles.showcaseBanner}
                       loading="lazy"
+                      referrerPolicy="no-referrer"
                     />
                     <div className={styles.showcaseBody}>
                       <div className={styles.showcaseMeta}>

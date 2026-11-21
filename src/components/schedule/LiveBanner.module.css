@@ -26,13 +26,13 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .subLabelLine {
   width: 24px;
   height: 2px;
-  background: #d4af37;
+  background: var(--cv-orange, #ff6b1a);
 }
 
 .mainHeading {
@@ -84,7 +84,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .memberName {
@@ -137,7 +137,7 @@
 
 .statBox {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(255, 107, 26, 0.25);
   border-radius: 12px;
   padding: 10px 14px;
   display: flex;
@@ -150,7 +150,7 @@
 
 .statBox:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: #d4af37;
+  border-color: var(--cv-orange, #ff6b1a);
   transform: translateY(-2px);
 }
 
@@ -162,7 +162,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .statValues {
@@ -201,7 +201,7 @@
 }
 
 .liveClockRow i {
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   font-size: 0.95rem;
 }
 
@@ -319,8 +319,8 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.15);
-  color: #d4af37;
+  background: rgba(255, 107, 26, 0.15);
+  color: var(--cv-orange, #ff6b1a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,7 +358,7 @@
 
 .equalizerBar {
   width: 3px;
-  background: #d4af37;
+  background: var(--cv-orange, #ff6b1a);
   border-radius: 3px;
   animation: equalizerBounce 1.2s infinite ease-in-out;
 }
@@ -390,7 +390,7 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   text-decoration: none;
   transition: color 0.2s, transform 0.2s;
 }

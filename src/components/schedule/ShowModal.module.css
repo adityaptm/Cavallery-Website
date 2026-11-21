@@ -472,7 +472,7 @@
 .gifterTotal {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 /* Stagelist Box */

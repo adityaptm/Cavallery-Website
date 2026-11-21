@@ -33,7 +33,7 @@
 
 .titleGroup i {
   font-size: 1.5rem;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .sectionTitle {
@@ -51,7 +51,7 @@
   background: rgba(255, 255, 255, 0.05);
   padding: 3px;
   border-radius: 999px;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(255, 107, 26, 0.25);
 }
 
 .tabBtn {
@@ -74,9 +74,9 @@
 }
 
 .tabBtnActive {
-  background: #d4af37;
-  color: #0c0a09 !important;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
+  background: var(--cv-orange, #ff6b1a);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 26, 0.35);
 }
 
 /* Posts Grid */
@@ -88,7 +88,7 @@
 
 .postCard {
   background: #181412;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(255, 107, 26, 0.25);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -101,8 +101,8 @@
 
 .postCard:hover {
   transform: translateY(-3px);
-  border-color: #d4af37;
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+  border-color: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 8px 24px rgba(255, 107, 26, 0.2);
 }
 
 /* Post Header */
@@ -124,7 +124,7 @@
   height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid #d4af37;
+  border: 1.5px solid var(--cv-orange, #ff6b1a);
 }
 
 .userName {
@@ -135,7 +135,7 @@
 
 .userHandle {
   font-size: 0.72rem;
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   font-weight: 600;
 }
 
@@ -200,7 +200,7 @@
 }
 
 .viewLink {
-  color: #d4af37;
+  color: var(--cv-orange, #ff6b1a);
   font-weight: 800;
   display: inline-flex;
   align-items: center;

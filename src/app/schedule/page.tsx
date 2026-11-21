@@ -24,7 +24,7 @@ export default function SchedulePage() {
             <i className="bx bx-time-five" /> #ErineSchedule
           </div>
           <h1 className={styles.heroTitle}>
-            Erine <span className="textGold">Schedule</span>
+            Erine <span style={{ color: "var(--cv-orange, #ff6b1a)" }}>Schedule</span>
           </h1>
           <p className={styles.heroSub}>
             Pusat jadwal resmi seluruh aktivitas show theater, siaran live streaming,
@@ -41,7 +41,7 @@ export default function SchedulePage() {
         <section id="theater-erine">
           <div style={{ marginBottom: "1.2rem" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Jadwal Show <span style={{ color: "#d4af37" }}>Theater Erine</span>
+              Jadwal Show <span style={{ color: "var(--cv-orange, #ff6b1a)" }}>Theater Erine</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
               Daftar seluruh show teater resmi JKT48 yang menampilkan Erine dalam lineup panggung.
@@ -55,7 +55,7 @@ export default function SchedulePage() {
         <section id="exclusive-stock">
           <div style={{ marginBottom: "1.2rem" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Status Tiket <span style={{ color: "#d4af37" }}>Eksklusif Erine</span>
+              Status Tiket <span style={{ color: "var(--cv-orange, #ff6b1a)" }}>Eksklusif Erine</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
               Pantau ketersediaan slot sesi eksklusif dan 2-Shot Erine secara langsung.
@@ -68,7 +68,7 @@ export default function SchedulePage() {
         <section id="calendar-view">
           <div style={{ marginBottom: "1.2rem" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Kalender <span style={{ color: "#d4af37" }}>Kegiatan Theater & Agenda</span>
+              Kalender <span style={{ color: "var(--cv-orange, #ff6b1a)" }}>Kegiatan Theater & Agenda</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
               Kalender bulanan seluruh jadwal show theater dan kegiatan Erine bersama JKT48.
