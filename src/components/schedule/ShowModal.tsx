@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "./ShowModal.module.css";
 import type { Jkt48TheaterShow, Jkt48Recording } from "@/types/jkt48";
 
@@ -21,6 +21,7 @@ function getYouTubeEmbedUrl(url?: string): string | null {
 }
 
 export default function ShowModal({ show, onClose }: ShowModalProps) {
+  const [copied, setCopied] = useState(false);
   const [detailData, setDetailData] = useState<{
     recordings: Jkt48Recording[];
     screenshots: string[];
@@ -30,7 +31,6 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
     screenshots: [],
     leaderboard_banner: null,
   });
-  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -42,9 +42,7 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
+      if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
 
@@ -54,13 +52,11 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
     };
   }, [show, onClose]);
 
-  // Fetch detail info (recordings, screenshots, leaderboard)
+  // Fetch detail info
   useEffect(() => {
     if (!show?.id) return;
 
     let isMounted = true;
-    setLoadingDetail(true);
-
     fetch(`/api/jkt48/theater/${encodeURIComponent(show.id)}`)
       .then((res) => res.json())
       .then((json) => {
@@ -72,19 +68,14 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
           });
         }
       })
-      .catch((err) => {
-        console.warn("Failed to fetch theater detail:", err);
-      })
-      .finally(() => {
-        if (isMounted) setLoadingDetail(false);
-      });
+      .catch((err) => console.warn(err));
 
     return () => {
       isMounted = false;
     };
   }, [show?.id]);
 
-  // HLS Player initialization for stream_url
+  // HLS stream
   const primaryRecording = detailData.recordings[0];
   const hlsStreamUrl = primaryRecording?.stream_url;
 
@@ -92,14 +83,11 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
     if (!hlsStreamUrl || !videoRef.current) return;
     const video = videoRef.current;
 
-    // Check Safari native HLS support
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = hlsStreamUrl;
     } else {
-      // Dynamic load hls.js from CDN
       const scriptId = "hls-js-cdn";
       let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
       const initHls = () => {
         const Hls = (window as any).Hls;
         if (Hls && Hls.isSupported()) {
@@ -108,7 +96,6 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
           hls.attachMedia(video);
         }
       };
-
       if (!script) {
         script = document.createElement("script");
         script.id = scriptId;
@@ -132,16 +119,27 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
       })
     : show.showDate;
 
+  const cleanTime = (show.startTime || "19:00").slice(0, 5);
+
   const members = show.members || [];
   const erineMember = members.find((m) => m.is_erine) || {
     id: "44",
-    name: "Catherina Vallencia (Erine)",
+    name: "Catherina Vallencia",
+    url_key: "erine",
     avatar: "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg",
     is_erine: true,
   };
   const otherMembers = members.filter((m) => !m.is_erine);
 
   const youtubeEmbedUrl = getYouTubeEmbedUrl(primaryRecording?.youtube_url);
+
+  const handleCopyLink = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div
@@ -154,178 +152,185 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
       aria-labelledby="modal-show-title"
     >
       <div className={styles.modal}>
-        {/* Tombol Tutup X */}
+        {/* Tombol Close X */}
         <button
           type="button"
           className={styles.closeBtn}
           onClick={onClose}
-          aria-label="Tutup Detail Show"
+          aria-label="Tutup"
         >
           <i className="bx bx-x" />
         </button>
 
-        {/* Header Poster Foto Erine & Cavallery Gradient */}
-        <div className={styles.headerPoster}>
-          <img
-            src={
-              show.banner && show.banner.includes("http")
-                ? show.banner
-                : "https://images.jkt48connect.com/cavallery/images/2026/09/cf207d2f32384a39.jpg"
-            }
-            alt={show.title}
-            className={styles.posterBg}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                "/images/erine-passion.webp";
-            }}
-          />
-          <div className={styles.posterGradient} />
+        {/* ── 1. HEADER (Dark Charcoal Banner) ── */}
+        <div className={styles.modalHeader}>
+          <div className={styles.teamTag}>{show.team || "TEAM JKT48"}</div>
 
-          <div className={styles.headerInfo}>
-            <h2 id="modal-show-title" className={styles.title}>
-              {show.title}
-            </h2>
+          <h2 id="modal-show-title" className={styles.modalTitle}>
+            {show.title}
+          </h2>
 
-            <div className={styles.chipsRow}>
-              <div className={styles.chip}>
-                <i className="bx bx-calendar" />
-                <span>{formattedDate}</span>
-              </div>
-              <div className={styles.chip}>
-                <i className="bx bx-time" />
-                <span>{(show.startTime || "19:00").slice(0, 5)} WIB</span>
-              </div>
-              {show.team && (
-                <div className={styles.chip}>
-                  <i className="bx bxs-flag-alt" />
-                  <span>{show.team}</span>
-                </div>
-              )}
-              <div className={styles.chip}>
-                <i className="bx bx-map-pin" />
-                <span>{show.location || "Theater JKT48"}</span>
-              </div>
-            </div>
+          <div className={styles.modalSubRow}>
+            <span>
+              {formattedDate} · {cleanTime} WIB
+            </span>
+
+            <span className={styles.headerStatusDot}>
+              <span className={styles.dotCircle} />
+              {show.status === "live"
+                ? "LIVE"
+                : show.status === "upcoming"
+                ? "AKAN DATANG"
+                : "SELESAI"}
+            </span>
           </div>
         </div>
 
-        {/* Isi Konten Modal */}
-        <div className={styles.bodyContent}>
-          {/* Section: Lineup Member */}
-          <div className={styles.sectionBlock}>
-            <h3 className={styles.sectionHeading}>
-              <i className="bx bx-group" />
-              <span>Tampil di Show Ini</span>
-            </h3>
-
-            {/* Kartu Sorotan Utama Erine */}
-            <div className={styles.erineSpotlightBox}>
-              <img
-                src={erineMember.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
-                alt="Catherina Vallencia"
-                className={styles.erineSpotlightImg}
-              />
-              <div className={styles.erineSpotlightDetails}>
-                <div className={styles.erineName}>
-                  {erineMember.name || "Catherina Vallencia (Erine)"}
-                </div>
-                <div className={styles.erineBadgeRole}>
-                  <i className="bx bxs-star" />
-                  <span>Member Utama yang Ditampilkan</span>
-                </div>
+        {/* ── 2. MODAL BODY (Warm Cream Content) ── */}
+        <div className={styles.modalBody}>
+          {/* 4 Info Cards (Tanggal, Tim, Waktu, Tempat) */}
+          <div className={styles.infoCardsRow}>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardLabel}>
+                <i className="bx bx-calendar" /> TANGGAL
+              </div>
+              <div className={styles.infoCardValue}>
+                {show.date ? new Date(show.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}
               </div>
             </div>
 
-            {/* Grid Foto Member Lain */}
-            {otherMembers.length > 0 && (
-              <div className={styles.memberGrid}>
-                {otherMembers.map((m, idx) => (
-                  <div key={m.id || idx} className={styles.memberCard}>
-                    <img
-                      src={m.avatar || m.img || "/images/cava-logo-round.png"}
-                      alt={m.name}
-                      className={styles.memberAvatar}
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = "/images/cava-logo-round.png";
-                      }}
-                    />
-                    <div className={styles.memberName}>{m.name}</div>
-                  </div>
-                ))}
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardLabel}>
+                <i className="bx bx-group" /> TIM
               </div>
-            )}
+              <div className={styles.infoCardValue}>{show.team || "Team JKT48"}</div>
+            </div>
+
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardLabel}>
+                <i className="bx bx-time" /> WAKTU
+              </div>
+              <div className={styles.infoCardValue}>{cleanTime} WIB</div>
+            </div>
+
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardLabel}>
+                <i className="bx bx-map-pin" /> TEMPAT
+              </div>
+              <div className={styles.infoCardValue}>{show.location || "JKT48 Theater"}</div>
+            </div>
           </div>
 
-          {/* Section: Rekaman Video (Jika show selesai & ada rekaman) */}
-          {(youtubeEmbedUrl || hlsStreamUrl) && (
-            <div className={styles.sectionBlock}>
-              <h3 className={styles.sectionHeading}>
-                <i className="bx bx-play-circle" />
-                <span>Rekaman Show Teater</span>
-              </h3>
+          {/* Erine Spotlight Highlight Box (Like Reference) */}
+          <div className={styles.erineSpotlightBox}>
+            <div className={styles.erineAvatarWrapper}>
+              <img
+                src={erineMember.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
+                alt="Erine"
+                className={styles.erineAvatarImg}
+              />
+              <span className={styles.erineStarBadge}>
+                <i className="bx bxs-star" />
+              </span>
+            </div>
 
-              <div className={styles.playerWrapper}>
+            <div className={styles.erineInfoCol}>
+              <span className={styles.erineRoleTag}>TAMPIL DI SHOW INI</span>
+              <h3 className={styles.erineBigName}>CATHERINA VALLENCIA</h3>
+              <span className={styles.erineSubCount}>
+                Erine · bersama {otherMembers.length} member lain
+              </span>
+            </div>
+          </div>
+
+          {/* Member Lineup Grid */}
+          <div className={styles.lineupSection}>
+            <h4 className={styles.lineupHeading}>
+              <i className="bx bx-group" />
+              <span>TAMPIL BERSAMA ERINE</span>
+              <span className={styles.countPillRed}>{otherMembers.length}</span>
+            </h4>
+
+            <div className={styles.membersGrid}>
+              {otherMembers.map((m, idx) => (
+                <div key={m.id || idx} className={styles.memberCard}>
+                  <img
+                    src={m.avatar || m.img || "/images/cava-logo-round.png"}
+                    alt={m.name}
+                    className={styles.memberImg}
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/images/cava-logo-round.png";
+                    }}
+                  />
+                  <span className={styles.memberNickname}>
+                    {m.name.split(" ")[0]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rekaman Show (Jika Ada) */}
+          {(youtubeEmbedUrl || hlsStreamUrl) && (
+            <div className={styles.lineupSection}>
+              <h4 className={styles.lineupHeading}>
+                <i className="bx bx-play-circle" />
+                <span>REKAMAN SHOW TEATER</span>
+              </h4>
+
+              <div className={styles.playerBox}>
                 {youtubeEmbedUrl ? (
                   <iframe
                     src={youtubeEmbedUrl}
-                    title={`Rekaman ${show.title}`}
+                    title={show.title}
                     className={styles.playerIframe}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 ) : hlsStreamUrl ? (
-                  <video
-                    ref={videoRef}
-                    controls
-                    className={styles.playerVideo}
-                    poster={show.banner}
-                  />
+                  <video ref={videoRef} controls className={styles.playerVideo} />
                 ) : null}
               </div>
             </div>
           )}
 
-          {/* Section: Galeri Screenshot */}
+          {/* Galeri Screenshot */}
           {detailData.screenshots.length > 0 && (
-            <div className={styles.sectionBlock}>
-              <h3 className={styles.sectionHeading}>
+            <div className={styles.lineupSection}>
+              <h4 className={styles.lineupHeading}>
                 <i className="bx bx-images" />
-                <span>Galeri Cuplikan Show</span>
-              </h3>
+                <span>CUPLIKAN SHOW</span>
+              </h4>
 
               <div className={styles.screenshotCarousel}>
-                {detailData.screenshots.map((sUrl, idx) => (
-                  <div key={idx} className={styles.screenshotItem}>
-                    <img src={sUrl} alt={`Cuplikan ${idx + 1}`} loading="lazy" />
-                  </div>
+                {detailData.screenshots.map((s, idx) => (
+                  <img key={idx} src={s} alt={`Cuplikan ${idx}`} className={styles.screenshotThumb} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Section: Rekap Leaderboard */}
-          <div className={styles.sectionBlock}>
-            <h3 className={styles.sectionHeading}>
-              <i className="bx bx-trophy" />
-              <span>Rekap Leaderboard Show</span>
-            </h3>
+          {/* Bottom Action Buttons (Like Reference: LIHAT DI JKT48.COM + SALIN TAUTAN) */}
+          <div className={styles.actionButtonsRow}>
+            <a
+              href={show.url || "https://jkt48.com/theater/schedule?lang=id"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.btnRedAction}
+            >
+              <span>LIHAT DI JKT48.COM</span>
+              <i className="bx bx-ticket" style={{ fontSize: "1.2rem" }} />
+            </a>
 
-            {detailData.leaderboard_banner?.status === "ready" &&
-            detailData.leaderboard_banner?.url ? (
-              <div className={styles.leaderboardBox}>
-                <img
-                  src={detailData.leaderboard_banner.url}
-                  alt="Rekap Leaderboard JKT48 Connect"
-                  loading="lazy"
-                />
-              </div>
-            ) : (
-              <div className={styles.emptyStateNotice}>
-                <i className="bx bx-info-circle" style={{ marginRight: 6 }} />
-                Gambar rekap belum tersedia.
-              </div>
-            )}
+            <button
+              type="button"
+              className={styles.btnWhiteAction}
+              onClick={handleCopyLink}
+            >
+              <span>{copied ? "TAUTAN DISALIN!" : "SALIN TAUTAN"}</span>
+              <i className={copied ? "bx bx-check" : "bx bx-link"} style={{ fontSize: "1.2rem" }} />
+            </button>
           </div>
         </div>
       </div>

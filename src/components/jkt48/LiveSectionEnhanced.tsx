@@ -146,7 +146,7 @@ export default function LiveSectionEnhanced() {
             <div className={styles.statusSub}>
               {erineIsLive
                 ? "Saksikan live streaming Erine sekarang di platform resminya."
-                : "Data diperbarui otomatis secara real-time dari JKT48 Connect."}
+                : "Data siaran diperbarui otomatis secara real-time."}
             </div>
           </div>
         </div>

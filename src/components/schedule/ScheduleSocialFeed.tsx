@@ -114,6 +114,8 @@ export default function ScheduleSocialFeed() {
                 ? `bx bxl-instagram ${styles.iconIg}`
                 : `bx bxl-tiktok ${styles.iconTt}`;
 
+            const hasPhoto = item.media_urls && item.media_urls.length > 0 && item.media_urls[0];
+
             return (
               <a
                 key={item.cursor}
@@ -140,13 +142,29 @@ export default function ScheduleSocialFeed() {
                   <i className={`${iconClass} ${styles.platformIcon}`} />
                 </div>
 
-                <p className={styles.postText}>{item.text || "Lihat postingan selengkapnya..."}</p>
+                {hasPhoto && (
+                  <div className={styles.postMediaBox}>
+                    <img
+                      src={item.media_urls![0]}
+                      alt="Post Media Erine"
+                      className={styles.postMediaImg}
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
 
-                <div className={styles.cardBottom}>
-                  <span>{relTime}</span>
-                  <span className={styles.viewLink}>
-                    Buka Post <i className="bx bx-link-external" />
-                  </span>
+                <div className={styles.cardBody}>
+                  <p className={styles.postText}>{item.text || "Lihat postingan Erine selengkapnya..."}</p>
+
+                  <div className={styles.cardBottom}>
+                    <span>{relTime}</span>
+                    <span className={styles.viewLink}>
+                      Buka Post <i className="bx bx-link-external" />
+                    </span>
+                  </div>
                 </div>
               </a>
             );

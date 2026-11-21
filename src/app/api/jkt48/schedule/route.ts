@@ -45,9 +45,30 @@ export async function GET(req: NextRequest) {
     );
 
     const eventsList = Array.isArray(rawData?.events) ? rawData.events : [];
-    const availablePeriods = Array.isArray(rawData?.available_periods)
+    const MONTH_ID = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    const rawPeriods = Array.isArray(rawData?.available_periods)
       ? rawData.available_periods
       : [];
+
+    const availablePeriods = rawPeriods.map((p: any) => {
+      if (typeof p === "string") {
+        const parts = p.split("-").map(Number);
+        const y = parts[0] || year;
+        const m = parts[1] || month;
+        return { year: y, month: m, label: `${MONTH_ID[m - 1] || m} ${y}` };
+      }
+      const y = Number(p.year) || year;
+      const m = Number(p.month) || month;
+      return {
+        year: y,
+        month: m,
+        label: p.label || `${MONTH_ID[m - 1] || m} ${y}`,
+      };
+    });
 
     // Tagging Erine events
     const processedEvents = eventsList.map((evt: any) => {

@@ -120,7 +120,7 @@ export default function LivePage() {
         <section style={{ marginTop: "2rem" }}>
           <div style={{ marginBottom: "1.25rem" }}>
             <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Live Hub <span style={{ color: "var(--cv-orange)" }}>JKT48 Connect</span>
+              Live Hub <span style={{ color: "var(--cv-orange)" }}>Erine & JKT48</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
               Siaran langsung seluruh member JKT48, notifikasi live, komentar real-time, dan galeri siaran.

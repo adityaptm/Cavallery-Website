@@ -4,13 +4,39 @@ import { useEffect, useState, useCallback } from "react";
 import styles from "./LiveBanner.module.css";
 import type { Jkt48LiveItem } from "@/types/jkt48";
 
+const IDN_PROFILE_URL = "https://www.idn.app/jkt48_erine";
+const SHOWROOM_PROFILE_URL = "https://www.showroom-live.com/r/JKT48_Erine";
+
 export default function LiveBanner() {
   const [liveStream, setLiveStream] = useState<Jkt48LiveItem | null>(null);
-  const [notification, setNotification] = useState<{
-    banner_url?: string;
-    caption?: string;
-  } | null>(null);
+  const [currentTimeStr, setCurrentTimeStr] = useState("");
 
+  // Live WIB Clock
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const timePart = now.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "Asia/Jakarta",
+      });
+      const datePart = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Asia/Jakarta",
+      });
+      setCurrentTimeStr(`${timePart} WIB · ${datePart}`);
+    };
+
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Poll live status
   const checkLive = useCallback(async () => {
     if (typeof document !== "undefined" && document.hidden) return;
 
@@ -21,71 +47,221 @@ export default function LiveBanner() {
         const lives: Jkt48LiveItem[] = json.data.lives || [];
         const erine = lives.find((l) => l.is_erine) || null;
         setLiveStream(erine);
-        setNotification(json.data.notification || null);
       }
-    } catch (err) {
-      // Ignore polling errors
-    }
+    } catch (err) {}
   }, []);
 
   useEffect(() => {
     checkLive();
-    const interval = setInterval(checkLive, 20000);
+    const interval = setInterval(checkLive, 25000);
     return () => clearInterval(interval);
   }, [checkLive]);
 
-  if (!liveStream) {
-    return null;
-  }
-
-  const platformLabel = (liveStream.platform || liveStream.type || "LIVE").toUpperCase();
+  const isLive = Boolean(liveStream);
+  const isIdnLive = isLive && (liveStream?.platform?.toLowerCase().includes("idn") || liveStream?.type === "idn");
+  const isShowroomLive = isLive && (liveStream?.platform?.toLowerCase().includes("showroom") || liveStream?.type === "showroom");
 
   return (
-    <div className={styles.liveBanner}>
-      <div className={styles.leftInfo}>
-        <div className={styles.avatarRing}>
-          <img
-            src={liveStream.img || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
-            alt="Erine Live"
-            className={styles.avatarImg}
-          />
-          <span className={styles.liveDotBadge}>
-            <i className="bx bx-broadcast" /> LIVE
-          </span>
+    <div className={styles.liveHub}>
+      {/* ── Section Header ── */}
+      <div className={styles.sectionHeader}>
+        <div className={styles.subLabel}>
+          <span className={styles.subLabelLine} />
+          <span>STREAMING · ERINE</span>
         </div>
+        <h2 className={styles.mainHeading}>
+          LIVE <span className={styles.mainHeadingHighlight}>STREAMING</span>
+        </h2>
+      </div>
 
-        <div className={styles.textGroup}>
-          <div className={styles.tagLive}>
-            <i className="bx bx-broadcast bx-flashing" />
-            <span>Erine Sedang LIVE di {platformLabel}!</span>
+      {/* ── 1. TOP MAIN MEMBER CARD (Cream Paper) ── */}
+      <div className={styles.topCard}>
+        <img
+          src="https://images.jkt48connect.com/cavallery/images/2026/09/cf207d2f32384a39.jpg"
+          alt="Catherina Vallencia"
+          className={styles.memberPortrait}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src =
+              "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+          }}
+        />
+
+        <div className={styles.memberMetaCol}>
+          <div>
+            <div className={styles.memberTag}>JKT48 MEMBER</div>
+            <h3 className={styles.memberName}>CATHERINA VALLENCIA</h3>
+
+            <div className={styles.liveStatusLine}>
+              <span className={isLive ? styles.dotLiveRed : styles.dotGray} />
+              <span>
+                {isLive
+                  ? `Sedang melangsungkan siaran langsung di ${liveStream?.platform || "LIVE"}!`
+                  : "Belum ada siaran saat ini"}
+              </span>
+            </div>
           </div>
-          <h4 className={styles.titleLive}>
-            {notification?.caption || liveStream.name}
-          </h4>
-          <span className={styles.captionLive}>
-            {liveStream.viewers ? `${liveStream.viewers.toLocaleString("id-ID")} penonton sedang menyaksikan` : "Tonton sekarang sebelum siaran selesai!"}
-          </span>
+
+          {/* Stat Boxes (IDN LIVE & SHOWROOM) */}
+          <div className={styles.statsRow}>
+            {/* IDN Stat Box */}
+            <a
+              href={IDN_PROFILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.statBox}
+            >
+              <div className={styles.statHeader}>
+                <span style={{ color: "#dc2626" }}>IDN LIVE</span>
+                <i className="bx bx-link-external" />
+              </div>
+              <div className={styles.statValues}>
+                <div className={styles.statItem}>
+                  <span className={styles.statNum}>166.2rb</span>
+                  <span className={styles.statLabel}>Followers</span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statNum}>45</span>
+                  <span className={styles.statLabel}>Following</span>
+                </div>
+              </div>
+            </a>
+
+            {/* SHOWROOM Stat Box */}
+            <a
+              href={SHOWROOM_PROFILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.statBox}
+            >
+              <div className={styles.statHeader}>
+                <span style={{ color: "#1c140e" }}>SHOWROOM</span>
+                <i className="bx bx-link-external" />
+              </div>
+              <div className={styles.statValues}>
+                <div className={styles.statItem}>
+                  <span className={styles.statNum}>316rb</span>
+                  <span className={styles.statLabel}>Followers</span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statNum}>50</span>
+                  <span className={styles.statLabel}>Room Level</span>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          {/* Live WIB Clock */}
+          <div className={styles.liveClockRow}>
+            <i className="bx bx-time" />
+            <span>{currentTimeStr || "Waktu Indonesia Barat (WIB)"}</span>
+          </div>
         </div>
       </div>
 
-      {notification?.banner_url && (
-        <img
-          src={notification.banner_url}
-          alt="Live Banner"
-          className={styles.notifBannerImg}
-          loading="lazy"
-        />
-      )}
+      {/* ── 2. BOTTOM DUAL CARDS (IDN LIVE & SHOWROOM) ── */}
+      <div className={styles.platformCardsGrid}>
+        {/* Card 1: IDN LIVE */}
+        <div className={styles.platformCard}>
+          <div className={styles.platformCardHeader}>
+            <div className={styles.platformPillGroup}>
+              <span className={styles.platformLogoBadge}>IDN</span>
+              <div className={styles.platformNameCol}>
+                <span className={styles.platformLabelSmall}>PLATFORM</span>
+                <span className={styles.platformNameBig}>IDN LIVE</span>
+              </div>
+            </div>
 
-      <a
-        href={liveStream.url || (platformLabel.includes("SHOWROOM") ? "https://www.showroom-live.com/r/JKT48_Erine" : "https://www.idn.app/jkt48_erine")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.watchBtn}
-      >
-        <i className="bx bx-play" />
-        <span>Tonton Siaran</span>
-      </a>
+            <span className={isIdnLive ? styles.statusPillLive : styles.statusPillOffline}>
+              <span className={isIdnLive ? styles.dotLiveRed : styles.dotGray} />
+              {isIdnLive ? "LIVE" : "OFFLINE"}
+            </span>
+          </div>
+
+          <div className={styles.soundwaveBox}>
+            <div className={styles.soundwaveLeft}>
+              <div className={styles.broadcastCircle}>
+                <i className="bx bx-broadcast" />
+              </div>
+              <div className={styles.soundwaveTextCol}>
+                <h4 className={styles.soundwaveTitle}>
+                  {isIdnLive ? "SEDANG LIVE" : "BELUM LIVE"}
+                </h4>
+                <span className={styles.soundwaveCaption}>
+                  {isIdnLive ? "Tonton siaran IDN Live Erine sekarang!" : "Erine sedang tidak siaran"}
+                </span>
+              </div>
+            </div>
+
+            {/* Equalizer Soundwave Animation */}
+            <div className={styles.equalizerWave}>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <span key={i} className={styles.equalizerBar} />
+              ))}
+            </div>
+          </div>
+
+          <a
+            href={liveStream?.url || IDN_PROFILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.visitBtn}
+          >
+            <span>{isIdnLive ? "TONTON SIARAN SEKARANG" : "KUNJUNGI PROFIL IDN LIVE"}</span>
+            <i className="bx bx-right-arrow-alt" style={{ fontSize: "1.1rem" }} />
+          </a>
+        </div>
+
+        {/* Card 2: SHOWROOM */}
+        <div className={styles.platformCard}>
+          <div className={styles.platformCardHeader}>
+            <div className={styles.platformPillGroup}>
+              <span className={styles.platformLogoBadge} style={{ background: "#221c18" }}>SHOW</span>
+              <div className={styles.platformNameCol}>
+                <span className={styles.platformLabelSmall}>PLATFORM</span>
+                <span className={styles.platformNameBig}>SHOWROOM</span>
+              </div>
+            </div>
+
+            <span className={isShowroomLive ? styles.statusPillLive : styles.statusPillOffline}>
+              <span className={isShowroomLive ? styles.dotLiveRed : styles.dotGray} />
+              {isShowroomLive ? "LIVE" : "OFFLINE"}
+            </span>
+          </div>
+
+          <div className={styles.soundwaveBox}>
+            <div className={styles.soundwaveLeft}>
+              <div className={styles.broadcastCircle}>
+                <i className="bx bx-broadcast" />
+              </div>
+              <div className={styles.soundwaveTextCol}>
+                <h4 className={styles.soundwaveTitle}>
+                  {isShowroomLive ? "SEDANG LIVE" : "BELUM LIVE"}
+                </h4>
+                <span className={styles.soundwaveCaption}>
+                  {isShowroomLive ? "Tonton Showroom Erine sekarang!" : "Erine sedang tidak siaran"}
+                </span>
+              </div>
+            </div>
+
+            {/* Equalizer Soundwave Animation */}
+            <div className={styles.equalizerWave}>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <span key={i} className={styles.equalizerBar} />
+              ))}
+            </div>
+          </div>
+
+          <a
+            href={liveStream?.url || SHOWROOM_PROFILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.visitBtn}
+          >
+            <span>{isShowroomLive ? "TONTON SIARAN SEKARANG" : "KUNJUNGI PROFIL SHOWROOM"}</span>
+            <i className="bx bx-right-arrow-alt" style={{ fontSize: "1.1rem" }} />
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

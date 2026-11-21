@@ -1,7 +1,7 @@
 /* ================================================================
    SHOW MODAL — Detailed Theater Show Modal
-   Header poster Erine dengan gradient overlay Cavallery,
-   Erine Spotlight Lineup, Member Grid, Video Player, Screenshots.
+   Matches Image 2 reference with 4 info cards, Erine spotlight,
+   Member grid with portraits, Action buttons & Video recordings.
    ================================================================ */
 
 .backdrop {
@@ -25,16 +25,17 @@
 
 .modal {
   position: relative;
-  background: var(--cv-ink-1, #120f0d);
-  border: 1px solid var(--cv-orange-line);
-  border-radius: var(--cv-radius-xl, 28px);
+  background: #fbf7f0; /* Warm paper body background */
+  border: 1px solid rgba(255, 107, 26, 0.3);
+  border-radius: 24px;
   width: 100%;
-  max-width: 820px;
+  max-width: 840px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.85),
-              0 0 40px rgba(255, 107, 26, 0.2);
+              0 0 40px rgba(220, 38, 38, 0.25);
   animation: slideUp 0.25s var(--cv-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  color: #1c140e;
 }
 
 @keyframes slideUp {
@@ -44,14 +45,14 @@
 
 .closeBtn {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  width: 40px;
-  height: 40px;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(12, 10, 9, 0.7);
-  border: 1px solid var(--cv-line-strong);
-  color: var(--cv-bone);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
   font-size: 1.3rem;
   display: flex;
   align-items: center;
@@ -62,215 +63,274 @@
 }
 
 .closeBtn:hover {
-  background: var(--cv-orange);
-  color: #140b05;
+  background: #dc2626;
   transform: rotate(90deg);
 }
 
-/* Modal Header with Large Erine Photo & Cavallery Gradient */
-.headerPoster {
+/* ── 1. HEADER (Dark Charcoal Banner) ────────────────────────── */
+.modalHeader {
+  background: #2b2420;
+  background-image: linear-gradient(135deg, #342a25 0%, #201a16 100%);
+  padding: 32px 36px 28px;
+  border-radius: 24px 24px 0 0;
   position: relative;
-  height: clamp(240px, 35vw, 340px);
-  overflow: hidden;
-  border-radius: var(--cv-radius-xl, 28px) var(--cv-radius-xl, 28px) 0 0;
-  display: flex;
-  align-items: flex-end;
-  padding: 32px;
+  color: #ffffff;
 }
 
-.posterBg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  z-index: 1;
+.teamTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 12px;
 }
 
-.posterGradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    var(--cv-ink-1, #120f0d) 15%,
-    rgba(18, 15, 13, 0.75) 50%,
-    rgba(12, 10, 9, 0.3) 100%
-  );
-  z-index: 2;
-}
-
-.headerInfo {
-  position: relative;
-  z-index: 3;
-  width: 100%;
-}
-
-.title {
+.modalTitle {
   font-family: var(--cv-font-display, "Anton", sans-serif);
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  line-height: 1.1;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.05;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--cv-bone);
-  margin: 0 0 12px 0;
+  color: #ffffff;
+  margin: 0 0 10px 0;
 }
 
-.chipsRow {
+.modalSubRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   align-items: center;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: rgba(245, 239, 230, 0.85);
+  font-weight: 600;
 }
 
-.chip {
+.headerStatusDot {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(245, 239, 230, 0.08);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--cv-line-strong);
-  border-radius: var(--cv-radius-pill, 999px);
-  padding: 5px 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--cv-bone);
-}
-
-.chip i {
-  color: var(--cv-orange);
-}
-
-/* Modal Body Content */
-.bodyContent {
-  padding: 28px 32px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.sectionBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.sectionHeading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--cv-font-display, "Anton", sans-serif);
-  font-size: 1.35rem;
-  letter-spacing: 0.03em;
+  font-size: 0.78rem;
+  font-weight: 800;
   text-transform: uppercase;
-  color: var(--cv-bone);
-  margin: 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--cv-line);
+  letter-spacing: 0.06em;
+  color: #a8a29e;
 }
 
-.sectionHeading i {
-  color: var(--cv-orange);
+.dotCircle {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a8a29e;
 }
 
-/* Erine Main Spotlight Card in Lineup */
-.erineSpotlightBox {
+/* ── 2. MODAL BODY (Warm Cream Content) ──────────────────────── */
+.modalBody {
+  padding: 28px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 4 Info Cards Row */
+.infoCardsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.infoCard {
+  background: #ffffff;
+  border: 1px solid rgba(60, 45, 35, 0.1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.infoCardLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a8a29e;
   display: flex;
   align-items: center;
-  gap: 18px;
-  background: linear-gradient(90deg, rgba(255, 107, 26, 0.15) 0%, rgba(245, 239, 230, 0.03) 100%);
-  border: 1.5px solid var(--cv-orange-line);
-  border-radius: var(--cv-radius, 14px);
-  padding: 16px 20px;
-  box-shadow: 0 8px 24px rgba(255, 107, 26, 0.15);
+  gap: 5px;
 }
 
-.erineSpotlightImg {
+.infoCardLabel i {
+  color: #dc2626;
+  font-size: 0.85rem;
+}
+
+.infoCardValue {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1c140e;
+  line-height: 1.3;
+}
+
+/* Erine Spotlight Highlight Box (Like Reference) */
+.erineSpotlightBox {
+  background: #fff5f5;
+  border: 1.5px solid #f87171;
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.08);
+}
+
+.erineAvatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.erineAvatarImg {
   width: 64px;
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--cv-orange);
-  box-shadow: 0 0 15px rgba(255, 107, 26, 0.4);
+  border: 2px solid #ef4444;
 }
 
-.erineSpotlightDetails {
+.erineStarBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: #ffffff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff5f5;
+}
+
+.erineInfoCol {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
-.erineName {
-  font-size: 1.15rem;
+.erineRoleTag {
+  font-size: 0.72rem;
   font-weight: 800;
-  color: var(--cv-bone);
-}
-
-.erineBadgeRole {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: var(--cv-orange);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #dc2626;
 }
 
-/* Grid Lineup Member Lain */
-.memberGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+.erineBigName {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1a1512;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.erineSubCount {
+  font-size: 0.82rem;
+  color: #78716c;
+  font-weight: 600;
+}
+
+/* Member Lineup Section */
+.lineupSection {
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
+.lineupHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1c140e;
+  margin: 0;
+}
+
+.lineupHeading i {
+  color: #dc2626;
+  font-size: 1.1rem;
+}
+
+.countPillRed {
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.membersGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .membersGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .memberCard {
+  background: #ffffff;
+  border: 1px solid rgba(60, 45, 35, 0.1);
+  border-radius: 12px;
+  padding: 10px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: var(--cv-ink-2);
-  border: 1px solid var(--cv-line);
-  border-radius: var(--cv-radius-sm, 10px);
-  padding: 12px 8px;
   gap: 8px;
-  transition: transform 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-.memberCard:hover {
-  transform: translateY(-2px);
-  border-color: var(--cv-orange-line);
-}
-
-.memberAvatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+.memberImg {
+  width: 72px;
+  height: 90px;
+  border-radius: 8px;
   object-fit: cover;
-  background: var(--cv-ink-3);
-  border: 1px solid var(--cv-line-strong);
+  background: #f5efe6;
 }
 
-.memberName {
+.memberNickname {
   font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--cv-text-dim);
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-weight: 700;
+  color: #1c140e;
+  line-height: 1.2;
 }
 
-/* Video Player Section */
-.playerWrapper {
+/* Video Player */
+.playerBox {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  padding-top: 56.25%;
   background: #000;
-  border-radius: var(--cv-radius, 14px);
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid var(--cv-line);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
 }
 
 .playerIframe, .playerVideo {
@@ -282,64 +342,88 @@
   border: none;
 }
 
-/* Screenshot Carousel */
+/* Screenshots Carousel */
 .screenshotCarousel {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   overflow-x: auto;
-  padding-bottom: 8px;
-  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
 }
 
-.screenshotItem {
-  flex: 0 0 240px;
-  height: 140px;
-  border-radius: var(--cv-radius-sm, 10px);
-  overflow: hidden;
-  border: 1px solid var(--cv-line);
-  scroll-snap-align: start;
-}
-
-.screenshotItem img {
-  width: 100%;
-  height: 100%;
+.screenshotThumb {
+  flex: 0 0 200px;
+  height: 120px;
+  border-radius: 10px;
   object-fit: cover;
-  transition: transform 0.25s ease;
+  border: 1px solid rgba(60, 45, 35, 0.15);
 }
 
-.screenshotItem:hover img {
-  transform: scale(1.05);
+/* Bottom Action Buttons (Like Reference: LIHAT DI JKT48.COM + SALIN TAUTAN) */
+.actionButtonsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
 }
 
-/* Leaderboard Banner */
-.leaderboardBox {
-  border-radius: var(--cv-radius, 14px);
-  overflow: hidden;
-  border: 1px solid var(--cv-line);
-  background: var(--cv-ink-2);
-}
-
-.leaderboardBox img {
-  width: 100%;
-  display: block;
-}
-
-.emptyStateNotice {
-  padding: 16px;
-  background: rgba(245, 239, 230, 0.03);
-  border: 1px dashed var(--cv-line);
-  border-radius: var(--cv-radius-sm, 10px);
-  color: var(--cv-text-mute);
+.btnRedAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  font-family: var(--cv-font-body, sans-serif);
   font-size: 0.88rem;
-  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 14px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  transition: background 0.2s, transform 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btnRedAction:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+.btnWhiteAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #1c140e;
+  border: 1.5px solid rgba(60, 45, 35, 0.2);
+  font-family: var(--cv-font-body, sans-serif);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 14px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btnWhiteAction:hover {
+  background: #f5efe6;
+  border-color: #dc2626;
 }
 
 @media (max-width: 600px) {
-  .bodyContent {
-    padding: 20px 18px 30px;
+  .infoCardsRow {
+    grid-template-columns: 1fr 1fr;
   }
-  .headerPoster {
+  .modalHeader, .modalBody {
     padding: 20px;
-    height: 220px;
+  }
+  .actionButtonsRow {
+    grid-template-columns: 1fr;
   }
 }

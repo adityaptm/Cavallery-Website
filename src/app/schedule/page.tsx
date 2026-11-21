@@ -64,14 +64,14 @@ export default function SchedulePage() {
           <ExclusiveStockView exclusiveId="EX79CB" />
         </section>
 
-        {/* Section: Kalender Bulanan & Agenda JKT48 Connect */}
+        {/* Section: Kalender Kegiatan Erine & JKT48 */}
         <section id="calendar-view">
           <div style={{ marginBottom: "1.2rem" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--cv-bone)", marginBottom: "0.4rem" }}>
-              Kalender <span style={{ color: "var(--cv-orange)" }}>Agenda JKT48</span>
+              Kalender <span style={{ color: "var(--cv-orange)" }}>Kegiatan Theater & Agenda</span>
             </h2>
             <p style={{ color: "var(--cv-text-dim)", fontSize: "0.95rem" }}>
-              Kalender bulanan seluruh agenda resmi dari JKT48 Connect.
+              Kalender bulanan seluruh jadwal show theater dan kegiatan Erine bersama JKT48.
             </p>
           </div>
           <ScheduleCalendarView />

@@ -90,7 +90,7 @@ export default function ScheduleCalendarView() {
       <div className={styles.headerBar}>
         <div className={styles.titleArea}>
           <i className="bx bx-calendar-event" />
-          <h3>Agenda & Jadwal Kegiatan JKT48</h3>
+          <h3>Kalender Kegiatan Erine & JKT48</h3>
         </div>
 
         <div className={styles.periodControls}>
@@ -104,11 +104,21 @@ export default function ScheduleCalendarView() {
             onChange={handlePeriodChange}
           >
             {availablePeriods.length > 0 ? (
-              availablePeriods.map((p) => (
-                <option key={`${p.year}-${p.month}`} value={`${p.year}-${p.month}`}>
-                  {p.label || `${MONTH_NAMES[p.month - 1]} ${p.year}`}
-                </option>
-              ))
+              availablePeriods.map((p: any, idx: number) => {
+                const y = typeof p === "string" ? parseInt(p.split("-")[0], 10) : p.year;
+                const m = typeof p === "string" ? parseInt(p.split("-")[1], 10) : p.month;
+                const validY = !isNaN(y) ? y : selectedYear;
+                const validM = !isNaN(m) && m >= 1 && m <= 12 ? m : selectedMonth;
+                const label = p.label && !p.label.includes("undefined")
+                  ? p.label
+                  : `${MONTH_NAMES[validM - 1]} ${validY}`;
+
+                return (
+                  <option key={`${validY}-${validM}-${idx}`} value={`${validY}-${validM}`}>
+                    {label}
+                  </option>
+                );
+              })
             ) : (
               <option value={`${selectedYear}-${selectedMonth}`}>
                 {MONTH_NAMES[selectedMonth - 1]} {selectedYear}

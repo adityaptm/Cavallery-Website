@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import styles from "./SpotlightCard.module.css";
 import type { Jkt48TheaterShow } from "@/types/jkt48";
 
@@ -15,38 +15,31 @@ const MONTH_ABBR = [
   "JUL", "AGU", "SEP", "OKT", "NOV", "DES",
 ];
 
-function formatHorizontalPill(dateStr: string, timeStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return `${dateStr} · ${timeStr} WIB`;
-    const day = DAY_ABBR[d.getDay()] || "";
-    const dateNum = d.getDate();
-    const month = MONTH_ABBR[d.getMonth()] || "";
-    const cleanTime = (timeStr || "19:00").slice(0, 5);
-    return `${day} · ${dateNum} ${month} · ${cleanTime} WIB`;
-  } catch {
-    return `${dateStr} · ${timeStr} WIB`;
-  }
-}
-
-const DEFAULT_ERINE_PORTRAIT = "https://images.jkt48connect.com/cavallery/images/2026/09/cf207d2f32384a39.jpg";
-const FALLBACK_ERINE_PORTRAIT = "/images/erine-passion.webp";
-
 export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
-  const [imgSrc, setImgSrc] = useState<string>(
-    show.banner && show.banner.includes("http") ? show.banner : DEFAULT_ERINE_PORTRAIT
-  );
+  // Parse date into stub components
+  const { dayAbbr, dayNum, monthAbbr, yearNum } = useMemo(() => {
+    try {
+      const d = new Date(show.date || show.showDate || "");
+      if (isNaN(d.getTime())) {
+        return { dayAbbr: "SHOW", dayNum: "--", monthAbbr: "JKT48", yearNum: "2026" };
+      }
+      return {
+        dayAbbr: DAY_ABBR[d.getDay()] || "SHOW",
+        dayNum: String(d.getDate()).padStart(2, "0"),
+        monthAbbr: MONTH_ABBR[d.getMonth()] || "EVENT",
+        yearNum: String(d.getFullYear()),
+      };
+    } catch {
+      return { dayAbbr: "SHOW", dayNum: "--", monthAbbr: "JKT48", yearNum: "2026" };
+    }
+  }, [show.date, show.showDate]);
 
-  const datePill = useMemo(
-    () => formatHorizontalPill(show.date || show.showDate || "", show.startTime || "19:00"),
-    [show.date, show.showDate, show.startTime]
-  );
+  const cleanTime = (show.startTime || "19:00").slice(0, 5);
 
   const members = show.members || [];
   const erineMember = members.find((m) => m.is_erine) || {
     id: "44",
-    name: "Catherina Vallencia",
-    url_key: "erine",
+    name: "Catherina Vallencia (Erine)",
     avatar: "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg",
     is_erine: true,
   };
@@ -54,16 +47,12 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
   const displayOthers = otherMembers.slice(0, 4);
   const remainingCount = Math.max(0, otherMembers.length - 4);
 
-  const statusClass =
-    show.status === "live"
-      ? styles.cardLive
-      : show.status === "completed"
-      ? styles.cardCompleted
-      : "";
+  const isLive = show.status === "live";
+  const isUpcoming = show.status === "upcoming";
 
   return (
     <div
-      className={`${styles.card} ${show.is_special ? styles.cardSpecial : ""} ${statusClass}`}
+      className={styles.ticketWrapper}
       onClick={() => onClick && onClick(show)}
       role="button"
       tabIndex={0}
@@ -73,137 +62,116 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
           onClick && onClick(show);
         }
       }}
-      aria-label={`Show ${show.title}, tanggal ${datePill}`}
+      aria-label={`Tiket Show ${show.title}, ${dayAbbr} ${dayNum} ${monthAbbr} ${yearNum}`}
     >
-      {/* Sisi Kiri: Detail Informasi & Lineup */}
-      <div className={styles.contentArea}>
-        {/* Baris Chip Horizontal */}
+      {/* ── 1. LEFT STUB (Date Column) ── */}
+      <div className={styles.stubLeft}>
+        <span className={styles.stubDay}>{dayAbbr}</span>
+        <span className={styles.stubNumber}>{dayNum}</span>
+        <div className={styles.stubMonthYear}>
+          <span>{monthAbbr}</span>
+          <span>{yearNum}</span>
+        </div>
+      </div>
+
+      {/* ── 2. NOTCHES ── */}
+      <div className={styles.notchDivider}>
+        <div className={styles.notchTop} />
+        <div className={styles.notchBottom} />
+      </div>
+
+      {/* ── 3. RIGHT TICKET BODY ── */}
+      <div className={styles.ticketBody}>
+        {/* Top Row: Team Badge & Status */}
         <div className={styles.metaRow}>
-          <div className={styles.chipDate}>
-            <i className="bx bx-time" style={{ color: "var(--cv-orange)" }} />
-            {datePill}
-          </div>
+          <span className={`${styles.teamBadge} ${show.is_special ? styles.specialBadge : ""}`}>
+            {show.is_special ? (
+              <>
+                <i className="bx bxs-star" /> SPESIAL ERINE
+              </>
+            ) : (
+              show.team || "TEAM PASSION"
+            )}
+          </span>
 
-          {show.team && (
-            <div className={styles.chipTeam}>
-              {show.team}
-            </div>
-          )}
-
-          {show.is_special && (
-            <div className={styles.chipSpecial}>
-              <i className="bx bxs-star" />
-              Spesial Erine
-            </div>
-          )}
-
-          <div
-            className={`${styles.chipStatus} ${
-              show.status === "live"
+          <span
+            className={`${styles.statusPill} ${
+              isLive
                 ? styles.statusLive
-                : show.status === "upcoming"
+                : isUpcoming
                 ? styles.statusUpcoming
-                : styles.statusCompleted
+                : ""
             }`}
           >
             <span className={styles.statusDot} />
-            {show.status === "live"
-              ? "LIVE SEKARANG"
-              : show.status === "upcoming"
-              ? "Akan Datang"
-              : "Selesai"}
-          </div>
+            {isLive ? "LIVE" : isUpcoming ? "AKAN DATANG" : "SELESAI"}
+          </span>
         </div>
 
-        {/* Judul Show - Font Display Condensed Tebal */}
-        <h3 className={styles.title} title={show.title}>
+        {/* Show Title */}
+        <h3 className={styles.showTitle} title={show.title}>
           {show.title}
         </h3>
 
-        {/* Lokasi */}
-        <div className={styles.locationRow}>
-          <i className="bx bx-map-pin" />
-          <span>{show.location || "Theater JKT48, fX Sudirman"}</span>
+        {/* Time & Place */}
+        <div className={styles.infoRow}>
+          <div className={styles.infoItem}>
+            <i className="bx bx-time" />
+            <span>{cleanTime} WIB</span>
+          </div>
+
+          <div className={styles.infoItem}>
+            <i className="bx bx-map-pin" />
+            <span>{show.location || "JKT48 Theater"}</span>
+          </div>
         </div>
 
-        {/* Countdown / Status Hint */}
-        {show.countdownText && (
-          <div className={styles.countdownBadge}>
-            <i className={show.status === "live" ? "bx bx-broadcast" : "bx bx-alarm"} />
-            <span>{show.countdownText}</span>
-          </div>
-        )}
+        {/* Perforated Divider Line */}
+        <div className={styles.perforatedLine} />
 
-        {/* Stack Avatar Lineup */}
-        <div className={styles.membersRow}>
-          <div className={styles.avatarStack}>
-            {/* Foto Erine selalu paling depan */}
-            <div className={`${styles.avatarItem} ${styles.avatarErine}`} title="Catherina Vallencia (Erine)">
+        {/* Bottom Lineup: Erine Pill + Member Stack + Arrow */}
+        <div className={styles.bottomRow}>
+          <div className={styles.lineupGroup}>
+            {/* Erine Highlight Pill */}
+            <div className={styles.erinePill} title="Catherina Vallencia (Erine)">
               <img
                 src={erineMember.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
-                alt="Erine JKT48"
-                className={styles.avatarImg}
-                loading="lazy"
+                alt="Erine"
+                className={styles.erineAvatar}
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+                  (e.currentTarget as HTMLImageElement).src =
+                    "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
                 }}
               />
-              <span className={styles.starBadge}><i className="bx bxs-star" /></span>
+              <span>ERINE</span>
             </div>
 
-            {/* Member Lain Ukuran Lebih Kecil */}
-            {displayOthers.map((m, idx) => (
-              <div
-                key={m.id || idx}
-                className={styles.avatarItem}
-                title={m.name}
-              >
+            {/* Other Member Avatars */}
+            <div className={styles.avatarStack}>
+              {displayOthers.map((m, idx) => (
                 <img
+                  key={m.id || idx}
                   src={m.avatar || m.img || "/images/cava-logo-round.png"}
                   alt={m.name}
-                  className={styles.avatarImg}
+                  className={styles.otherAvatar}
+                  title={m.name}
                   loading="lazy"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = "/images/cava-logo-round.png";
                   }}
                 />
-              </div>
-            ))}
+              ))}
 
-            {remainingCount > 0 && (
-              <div className={styles.avatarMore}>
-                +{remainingCount}
-              </div>
-            )}
+              {remainingCount > 0 && (
+                <span className={styles.moreMembersPill}>+{remainingCount}</span>
+              )}
+            </div>
           </div>
 
-          <div className={styles.lineupHint}>
-            Erine & {otherMembers.length} member lainnya
+          {/* Action Arrow Button */}
+          <div className={styles.arrowBtn}>
+            <i className="bx bx-right-arrow-alt" />
           </div>
-        </div>
-
-        {/* Action Callout */}
-        <button type="button" className={styles.actionBtn}>
-          <span>{show.status === "completed" ? "Lihat Rekaman & Detail" : "Detail Show & Tiket"}</span>
-          <i className="bx bx-right-arrow-alt" />
-        </button>
-      </div>
-
-      {/* Sisi Kanan: Spotlight + Foto Erine Menonjol */}
-      <div className={styles.spotlightArea}>
-        <div className={styles.spotlightGlow} />
-        <div className={styles.portraitWrapper}>
-          <img
-            src={imgSrc}
-            alt={`Erine - ${show.title}`}
-            className={styles.portraitImg}
-            loading="lazy"
-            onError={() => {
-              if (imgSrc !== FALLBACK_ERINE_PORTRAIT) {
-                setImgSrc(FALLBACK_ERINE_PORTRAIT);
-              }
-            }}
-          />
         </div>
       </div>
     </div>

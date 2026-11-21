@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styles from "./ExclusiveStockView.module.css";
-import type { Jkt48ExclusiveFlattenedResponse, ExclusiveSession } from "@/types/jkt48";
+import type { Jkt48ExclusiveFlattenedResponse } from "@/types/jkt48";
 
 interface ExclusiveStockViewProps {
   exclusiveId?: string;
@@ -44,134 +44,159 @@ export default function ExclusiveStockView({ exclusiveId = "EX79CB" }: Exclusive
 
   const getStatusBadge = (status: string) => {
     const s = (status || "").toLowerCase();
-    if (s.includes("available") || s.includes("tersedia") || s.includes("ready") || s.includes("open")) {
-      return <span className={`${styles.badgeStatus} ${styles.statusAvailable}`}>Tersedia</span>;
+    if (s.includes("sold") || s.includes("habis")) {
+      return (
+        <span className={styles.badgeHabis}>
+          <i className="bx bx-lock-alt" /> Habis
+        </span>
+      );
     }
-    if (s.includes("limited") || s.includes("hampir") || s.includes("sisa")) {
-      return <span className={`${styles.badgeStatus} ${styles.statusLimited}`}>Hampir Habis</span>;
-    }
-    return <span className={`${styles.badgeStatus} ${styles.statusSoldOut}`}>Habis</span>;
+    return (
+      <span className={styles.badgeTersedia}>
+        <i className="bx bx-check-circle" /> Tersedia
+      </span>
+    );
   };
+
+  const totalAvailable = data?.summary?.total_available ?? 0;
+  const totalSoldOut = data?.summary?.total_sold_out ?? 0;
+  const totalSessions = data?.summary?.total_sessions ?? (data?.sessions?.length || 0);
 
   return (
     <div className={styles.container}>
-      {/* Header Bar */}
-      <div className={styles.headerBar}>
-        <div className={styles.titleArea}>
-          <i className="bx bx-purchase-tag-alt" />
-          <div>
-            <h3>Status Stok Tiket Eksklusif Erine</h3>
-            <span style={{ fontSize: "0.8rem", color: "var(--cv-text-dim)" }}>
+      <div className={styles.mainCard}>
+        {/* Top Header & Date Picker */}
+        <div className={styles.topBar}>
+          <div className={styles.titleArea}>
+            <div className={styles.tagExclusive}>
+              <i className="bx bx-purchase-tag-alt" />
+              <span>EXCLUSIVE 2-SHOT & VC</span>
+            </div>
+            <h3 className={styles.cardTitle}>Status Stok Tiket Eksklusif Erine</h3>
+            <span className={styles.eventSub}>
               Event ID: {exclusiveId} · Khusus Catherina Vallencia
             </span>
           </div>
-        </div>
 
-        <div className={styles.dateControls}>
-          <label htmlFor="exclusive-date" style={{ fontSize: "0.85rem", color: "var(--cv-text-dim)" }}>
-            Pilih Tanggal:
-          </label>
-          <input
-            id="exclusive-date"
-            type="date"
-            className={styles.dateInput}
-            value={selectedDate}
-            onChange={handleDateChange}
-          />
-          {selectedDate && (
-            <button
-              onClick={() => setSelectedDate("")}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "var(--cv-orange)",
-                fontSize: "0.8rem",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-            >
-              Reset
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Purchase Bar if data available */}
-      {data && (
-        <div className={styles.purchaseBar}>
-          <div className={styles.purchaseInfo}>
-            <div className={styles.purchaseTitle}>
-              Status Penjualan: <span style={{ textTransform: "uppercase", color: "var(--cv-orange)" }}>{data.sales_status}</span>
-            </div>
-            {data.summary && (
-              <div className={styles.purchaseSub}>
-                Tersedia: {data.summary.total_available ?? "-"} · Habis: {data.summary.total_sold_out ?? "-"} · Sesi Erine: {data.summary.total_sessions ?? data.sessions.length}
-              </div>
+          <div className={styles.dateControlBox}>
+            <span className={styles.dateLabel}>Pilih Tanggal:</span>
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={selectedDate}
+              onChange={handleDateChange}
+              aria-label="Pilih Tanggal Sesi"
+            />
+            {selectedDate && (
+              <button
+                type="button"
+                className={styles.resetBtn}
+                onClick={() => setSelectedDate("")}
+              >
+                Reset
+              </button>
             )}
           </div>
+        </div>
+
+        {/* Summary Metrics Strip */}
+        <div className={styles.metricsStrip}>
+          <div className={styles.pillsRow}>
+            <span className={`${styles.metricPill} ${styles.pillOpen}`}>
+              <span className={styles.pillOpenDot} />
+              Status Penjualan: {data?.sales_status || "OPEN"}
+            </span>
+
+            <span className={`${styles.metricPill} ${styles.pillAvailable}`}>
+              Tersedia: {totalAvailable}
+            </span>
+
+            <span className={`${styles.metricPill} ${styles.pillSoldOut}`}>
+              Habis: {totalSoldOut}
+            </span>
+
+            <span className={`${styles.metricPill} ${styles.pillTotal}`}>
+              Sesi Erine: {totalSessions}
+            </span>
+          </div>
+
           <a
-            href={data.purchase_url || "https://jkt48.com"}
+            href={data?.purchase_url || `https://jkt48.com/purchase/exclusive?code=${exclusiveId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.buyBtn}
+            className={styles.buyOfficialBtn}
           >
-            <i className="bx bx-cart" /> Beli di Official JKT48
+            <span>Beli di Official JKT48</span>
+            <i className="bx bx-link-external" />
           </a>
         </div>
-      )}
 
-      {/* Main Content */}
-      {loading ? (
-        <div className={styles.skeletonContainer}>
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className={styles.skeletonBox} />
-          ))}
-        </div>
-      ) : error ? (
-        <div className={styles.stateBox}>
-          <i className={`bx bx-error-circle ${styles.stateIcon}`} />
-          <div className={styles.stateText}>{error}</div>
-          <button className={styles.retryBtn} onClick={() => fetchData(selectedDate)}>
-            Coba Lagi
-          </button>
-        </div>
-      ) : !data || data.sessions.length === 0 ? (
-        <div className={styles.stateBox}>
-          <i className={`bx bx-calendar-x ${styles.stateIcon}`} />
-          <div className={styles.stateText}>
+        {/* Sessions Grid */}
+        {loading ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "#78716c" }}>
+            <i className="bx bx-loader-alt bx-spin" style={{ fontSize: "2rem", color: "#dc2626" }} />
+            <p style={{ marginTop: "10px", fontSize: "0.9rem" }}>Memeriksa slot tiket Erine...</p>
+          </div>
+        ) : error ? (
+          <div style={{ padding: "30px", textAlign: "center", color: "#b91c1c" }}>
+            <p>{error}</p>
+            <button
+              type="button"
+              className={styles.buyOfficialBtn}
+              onClick={() => fetchData(selectedDate)}
+              style={{ marginTop: "10px" }}
+            >
+              Coba Lagi
+            </button>
+          </div>
+        ) : !data || data.sessions.length === 0 ? (
+          <div className={styles.emptyNotice}>
+            <i className="bx bx-calendar-x" style={{ fontSize: "2rem", color: "#a8a29e", marginBottom: "8px", display: "block" }} />
             Tidak ada jadwal sesi eksklusif untuk Erine pada tanggal ini.
           </div>
-        </div>
-      ) : (
-        <div className={styles.sessionsGrid}>
-          {data.sessions.map((session, sIdx) => {
-            return (
-              <div key={sIdx} className={styles.sessionCard}>
-                <div className={styles.sessionHeader}>
-                  <div className={styles.sessionLabel}>{session.label}</div>
-                  <div className={styles.sessionTime}>
-                    <i className="bx bx-time" /> {session.start_time} WIB
-                  </div>
-                </div>
+        ) : (
+          <div className={styles.sessionsGrid}>
+            {data.sessions.map((session, sIdx) => {
+              const cleanTime = (session.start_time || "").slice(0, 5);
 
-                <div className={styles.lanesList}>
-                  {session.lanes.map((lane, lIdx) => {
-                    return (
-                      <div key={lIdx} className={styles.laneItem}>
-                        <div className={`${styles.laneMember} ${styles.laneMemberErine}`}>
-                          <i className="bx bxs-star" style={{ marginRight: "4px" }} />
-                          {lane.member_name}
+              return (
+                <div key={sIdx} className={styles.sessionTicket}>
+                  <div className={styles.sessionTopRow}>
+                    <span className={styles.sessionLabelTag}>
+                      {session.label || `Sesi ${sIdx + 1}`}
+                    </span>
+                    <span className={styles.sessionTimeChip}>
+                      <i className="bx bx-time" /> {cleanTime} WIB
+                    </span>
+                  </div>
+
+                  {session.lanes.map((lane, lIdx) => (
+                    <div key={lIdx} className={styles.memberLaneBox}>
+                      <div className={styles.memberMetaLeft}>
+                        <img
+                          src="https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"
+                          alt="Catherina Vallencia"
+                          className={styles.memberThumb}
+                        />
+                        <div className={styles.memberNameCol}>
+                          <span className={styles.memberRealName}>
+                            {lane.member_name || "Catherina Vallencia"}
+                          </span>
+                          <span className={styles.memberSpecialStar}>
+                            <i className="bx bxs-star" /> Member Slot
+                          </span>
                         </div>
-                        {getStatusBadge(lane.status)}
                       </div>
-                    );
-                  })}
+
+                      {getStatusBadge(lane.status)}
+                    </div>
+                  ))}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
