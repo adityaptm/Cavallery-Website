@@ -5,11 +5,11 @@ import styles from "./GameRineSection.module.css";
 
 const games = [
   {
-    title: "Kuda Api Erine — Knight's Passion",
-    desc: "Game terbaru! Lompatkan kuda dengan langkah L dan tangkap api Passion sebelum waktu habis.",
-    href: "/games/knight-passion",
-    icon: "bxs-chess",
-    tag: "Puzzle · Baru",
+    title: "Game Anterine Ke Theater",
+    desc: "Bantu dan anterin Erine menuju Theater JKT48 tepat waktu sebelum show dimulai!",
+    href: "/games/anterine-ke-theater",
+    icon: "bxs-navigation",
+    tag: "Adventure · Baru",
     color: "var(--cv-orange)",
   },
   {

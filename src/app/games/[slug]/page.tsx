@@ -25,10 +25,15 @@ const gameData: Record<string, { title: string; url: string; description: string
     url: "/play/love-tester.html",
     description: "Ukur seberapa besar cintamu untuk Erine!",
   },
+  "anterine-ke-theater": {
+    title: "Game Anterine Ke Theater",
+    url: "https://adityaptm.github.io/Game-2d-Anterine_ke_theater/",
+    description: "Bantu dan anterin Erine menuju Theater JKT48 sebelum show dimulai!",
+  },
   "knight-passion": {
-    title: "Kuda Api Erine — Knight's Passion",
-    url: "/play/knight-passion.html",
-    description: "Gerakkan kuda catur dengan langkah L dan tangkap api Passion secepat mungkin!",
+    title: "Game Anterine Ke Theater",
+    url: "https://adityaptm.github.io/Game-2d-Anterine_ke_theater/",
+    description: "Bantu dan anterin Erine menuju Theater JKT48 sebelum show dimulai!",
   },
   "dress-up-erine": {
     title: "Dress Up Erine Outfit",
@@ -68,6 +73,26 @@ export default async function GamePlayPage({ params }: Props) {
             <i className="bx bx-left-arrow-alt" /> Kembali
           </Link>
           <h1 className={styles.title}>{game.title}</h1>
+          {game.url.startsWith("http") && (
+            <a
+              href={game.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                marginLeft: "auto",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                color: "var(--cv-orange, #ff6b1a)",
+                textDecoration: "none",
+              }}
+            >
+              <span>Buka di Tab Baru</span>
+              <i className="bx bx-external-link" />
+            </a>
+          )}
         </div>
       </div>
       <div className={styles.frameWrapper}>
