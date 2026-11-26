@@ -1,70 +1,130 @@
 .videoWrap {
   position: relative;
   max-width: 1200px;
-  margin: 0 auto 64px;
+  margin: 0 auto 48px;
   padding: 0 24px;
+}
+
+@media (max-width: 600px) {
+  .videoWrap {
+    padding: 0 16px;
+    margin-bottom: 32px;
+  }
+}
+
+.videoCard {
+  position: relative;
+  background: var(--surface, #15120e);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
+
+.skipButton {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.2s ease;
+}
+
+.skipButton:hover {
+  background: rgba(228, 115, 39, 0.9);
+  border-color: #e47327;
+  transform: translateY(-1px);
+}
+
+.skipButton:focus-visible {
+  outline: 2px solid var(--gold, #ff6b1a);
+  outline-offset: 2px;
+}
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+}
+
 .video {
   width: 100%;
-  max-height: 460px;
+  max-height: 440px;
   object-fit: cover;
   display: block;
-  border-radius: 20px;
-  border: 1px solid var(--border);
 }
+
 .videoOverlay {
   position: absolute;
-  bottom: 0; left: 24px; right: 24px;
-  padding: 32px;
-  background: linear-gradient(to top, rgba(5,5,10,0.9), transparent);
-  border-radius: 0 0 20px 20px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 24px 20px;
+  background: linear-gradient(to top, rgba(12, 10, 9, 0.92) 0%, rgba(12, 10, 9, 0.5) 60%, transparent 100%);
   display: flex;
   flex-direction: column;
   gap: 8px;
   pointer-events: none;
   z-index: 2;
 }
+
 .videoBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--gold);
-  color: #0a0805;
-  font-size: .72rem;
+  background: var(--gold, #ff6b1a);
+  color: #0c0a09;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 5px 12px;
   border-radius: 999px;
   width: fit-content;
 }
-.videoTitle { font-size: 1.1rem; font-weight: 600; color: var(--fg); }
+
+.videoTitle {
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  font-weight: 600;
+  color: var(--fg, #f5efe6);
+  margin: 0;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
 
 .fallbackTeaser {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   text-align: center;
   width: 100%;
-  height: 380px;
+  min-height: 240px;
   background: linear-gradient(135deg, #100f0d 0%, #1e1b15 100%);
-  border-radius: 20px;
-  border: 1px solid var(--border);
   position: relative;
-  z-index: 1;
   overflow: hidden;
+  padding: 40px 20px;
 }
 
 .fallbackGlow {
   position: absolute;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
-  filter: blur(50px);
-  opacity: 0.55;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(228, 115, 39, 0.25) 0%, transparent 70%);
+  filter: blur(40px);
   pointer-events: none;
 }

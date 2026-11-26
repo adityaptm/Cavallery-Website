@@ -260,9 +260,9 @@ const DEFAULT_TRIVIA_LIST: TriviaItem[] = [
     id: 9,
     q: "Di team manakah Erine resmi dipromosikan sebagai member inti JKT48?",
     options: [
-      "Team Blossom",
+      "Team Love",
       "Team Passion",
-      "Team Fire"
+      "Team Dream"
     ],
     correctIndex: 1,
     a: "Erine resmi dipromosikan ke Team Passion JKT48 dan membakar panggung bersama semangat Cavallery.",

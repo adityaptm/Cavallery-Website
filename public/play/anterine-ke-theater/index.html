@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Anterin Erine ke Theater</title>
+
+  <!-- Boxicons -->
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+  <!-- UI font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./styles/styles.css" />
+  <link rel="stylesheet" href="./styles/ui-upgrade.css" />
+</head>
+<body>
+
+  <!-- Floating Audio Mute Toggle Button in Corner -->
+  <button id="muteToggleBtn" class="mute-corner-btn" title="Mute / Unmute" aria-label="Toggle Audio Mute">
+    <i class="bx bx-volume-full"></i>
+  </button>
+
+  <!-- Fire Particle Background Canvas -->
+  <canvas id="fireParticles"></canvas>
+
+  <!-- Loading Animation Overlay with Erine Passion Running -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-erine-wrap">
+        <div class="loading-erine-runner"></div>
+      </div>
+      <h2 class="loading-title">Anterin Erine ke Theater</h2>
+      <p class="loading-subtitle">Bantu Erine sampai ke portal Theater JKT48 sebelum pertunjukan dimulai!</p>
+      
+      <!-- Character selector right on loading screen for easy mobile & desktop choice -->
+      <div class="loading-gender-select">
+        <span class="gender-label"><i class="bx bx-user-pin"></i> Karakter Player 2:</span>
+        <div class="toggle-row toggle-grid-4">
+          <button id="loadingWaterBoyBtn" class="toggle-btn" type="button">
+            <i class="bx bx-male"></i><span>Cowok</span>
+          </button>
+          <button id="loadingWaterGirlBtn" class="toggle-btn active" type="button">
+            <i class="bx bx-female"></i><span>Cewek</span>
+          </button>
+          <button id="loadingWaterLoveBtn" class="toggle-btn" type="button">
+            <i class="bx bx-heart"></i><span>Team Love</span>
+          </button>
+          <button id="loadingWaterDreamBtn" class="toggle-btn" type="button">
+            <i class="bx bx-star"></i><span>Team Dream</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="loading-progress-container" id="loadingProgressGroup">
+        <div class="loading-bar-track">
+          <div class="loading-bar-fill" id="loadingBarFill"></div>
+        </div>
+        <div class="loading-percent" id="loadingPercent">0%</div>
+      </div>
+      <p class="loading-status" id="loadingStatus">Memuat Game...</p>
+
+      <!-- Main Sekarang Button (Muncul setelah 100% langsung masuk ke arena game) -->
+      <button id="startGameBtn" class="loading-play-btn" style="display: none;" onclick="window.startGameNow(event)">
+        <i class="bx bx-play-circle"></i><span>MAIN SEKARANG</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Game Layout -->
+  <div class="game-layout">
+    <!-- Left Sidebar: Controls & Options -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <h1 class="game-brand-title">Anterin Erine ke Theater</h1>
+          <p class="game-brand-desc">Bantu Erine sampai ke portal Theater JKT48 sebelum pertunjukan dimulai!</p>
+        </div>
+
+        <!-- Player 2 Character Toggle -->
+        <div class="ctrl-group">
+          <h3 class="ctrl-label"><i class="bx bx-user-pin"></i> Karakter Pengantar (Player 2)</h3>
+          <div class="toggle-row toggle-grid-4">
+            <button id="waterBoyBtn" class="toggle-btn" type="button">
+              <i class="bx bx-male"></i><span>Cowok</span>
+            </button>
+            <button id="waterGirlBtn" class="toggle-btn active" type="button">
+              <i class="bx bx-female"></i><span>Cewek</span>
+            </button>
+            <button id="waterLoveBtn" class="toggle-btn" type="button">
+              <i class="bx bx-heart"></i><span>Team Love</span>
+            </button>
+            <button id="waterDreamBtn" class="toggle-btn" type="button">
+              <i class="bx bx-star"></i><span>Team Dream</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Controls Guide -->
+        <div class="ctrl-group">
+          <h3 class="ctrl-label"><i class="bx bx-joystick"></i> Kontrol Permainan</h3>
+          <div class="controls-info">
+            <div class="ctrl-row">
+              <span class="ctrl-tag fire">Player 1</span>
+              <kbd><i class="bx bx-left-arrow-alt"></i></kbd>
+              <kbd><i class="bx bx-right-arrow-alt"></i></kbd>
+              <kbd><i class="bx bx-up-arrow-alt"></i> Lompat</kbd>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-tag water">Player 2</span>
+              <kbd>A</kbd>
+              <kbd>D</kbd>
+              <kbd>W (Lompat)</kbd>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Notice -->
+        <footer class="page-footer">
+          <p>Game fan-made, tidak resmi dan tidak berafiliasi dengan JKT48.</p>
+        </footer>
+      </div>
+    </aside>
+
+    <!-- Game Canvas Viewport -->
+    <main class="game-main">
+      <div id="gameContainer"></div>
+    </main>
+  </div>
+
+  <!-- Touch Controls (Mobile Display: Phone & Tablet) -->
+  <div id="touch-controls-wrapper">
+    <div id="touch-controls-player1" class="touch-pad touch-pad-fire">
+      <div class="touch-player-label">P1 (Erine)</div>
+      <div class="touch-buttons-row">
+        <button id="left1" class="touch-button" aria-label="Player 1 Kiri"><i class="bx bx-chevron-left"></i></button>
+        <button id="up1" class="touch-button touch-jump" aria-label="Player 1 Lompat"><i class="bx bx-chevron-up"></i></button>
+        <button id="right1" class="touch-button" aria-label="Player 1 Kanan"><i class="bx bx-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="touch-controls-player2" class="touch-pad touch-pad-water">
+      <div class="touch-player-label">P2 (Pengantar)</div>
+      <div class="touch-buttons-row">
+        <button id="left2" class="touch-button" aria-label="Player 2 Kiri"><i class="bx bx-chevron-left"></i></button>
+        <button id="up2" class="touch-button touch-jump" aria-label="Player 2 Lompat"><i class="bx bx-chevron-up"></i></button>
+        <button id="right2" class="touch-button" aria-label="Player 2 Kanan"><i class="bx bx-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/main.js"></script>
+  <script src="./scripts/phaser.min.js"></script>
+  <script type="module" src="scripts/game.js"></script>
+
+  <!-- Ember Particle Animation -->
+  <script>
+  (function() {
+    const canvas = document.getElementById("fireParticles");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W, H;
+    const particles = [];
+    const COUNT = 30;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    class Spark {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * W;
+        this.y = H + 10 + Math.random() * 30;
+        this.r = 1.2 + Math.random() * 2.5;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = -(0.5 + Math.random() * 1.2);
+        this.life = 0.6 + Math.random() * 0.4;
+        this.decay = 0.003 + Math.random() * 0.004;
+        this.hue = 15 + Math.random() * 25;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+        if (this.life <= 0 || this.y < -20) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * this.life, 0, Math.PI * 2);
+        ctx.fillStyle = "hsla(" + this.hue + ", 100%, 55%, " + (this.life * 0.4) + ")";
+        ctx.shadowColor = "hsla(" + this.hue + ", 100%, 60%, 0.3)";
+        ctx.shadowBlur = 6;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < COUNT; i++) {
+      const p = new Spark();
+      p.y = Math.random() * H;
+      particles.push(p);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.shadowBlur = 0;
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+  </script>
+</body>
+</html>

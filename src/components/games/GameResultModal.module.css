@@ -1,0 +1,194 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 9, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalCard {
+  background: linear-gradient(145deg, #1f1915 0%, #110e0c 100%);
+  border: 1.5px solid rgba(255, 107, 26, 0.4);
+  border-radius: 24px;
+  padding: 32px 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 107, 26, 0.2);
+  position: relative;
+  text-align: center;
+  animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.trophyBadge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 107, 26, 0.3) 0%, rgba(255, 107, 26, 0.05) 100%);
+  border: 2px solid var(--cv-orange, #ff6b1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 2.4rem;
+  color: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 6px 20px rgba(255, 107, 26, 0.35);
+}
+
+.title {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cv-bone, #f5efe6);
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 0.88rem;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.7));
+  margin: 0 0 20px;
+}
+
+.scoreBox {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 107, 26, 0.25);
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scoreLabel {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.6));
+}
+
+.scoreValue {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--cv-orange, #ff6b1a);
+  text-shadow: 0 2px 10px rgba(255, 107, 26, 0.4);
+}
+
+.rankStatusLine {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #22c55e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.rankErrorLine {
+  font-size: 0.82rem;
+  color: #f87171;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.btnGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.playAgainBtn {
+  background: linear-gradient(135deg, #ff7828 0%, #e05609 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 107, 26, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  width: 100%;
+}
+
+.playAgainBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 26, 0.45);
+}
+
+.leaderboardBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(245, 239, 230, 0.2);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cv-bone, #f5efe6);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.leaderboardBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--cv-orange, #ff6b1a);
+  color: #ffffff;
+}
+
+.retryBtn {
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid #dc2626;
+  color: #fca5a5;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s ease;
+}
+
+.retryBtn:hover {
+  background: rgba(220, 38, 38, 0.35);
+}

@@ -1,0 +1,223 @@
+/* ==========================================================
+   ui-upgrade.css
+   Loaded after styles.css. Only touches UI controls
+   (buttons, player labels, character select, touch pad).
+   ========================================================== */
+
+:root {
+  --fire-500: #ff6a1a;
+  --fire-600: #e04a00;
+  --fire-700: #a83300;
+  --water-500: #2f9bff;
+  --water-600: #1a73d9;
+  --water-700: #0f4f9e;
+  --ink: #2b1d14;
+  --paper: #fff8ef;
+  --line: rgba(43, 29, 20, 0.18);
+  --ui-font: "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ---------- Boxicons base sizing ---------- */
+.ui-btn .bx,
+.water-btn .bx,
+.water-select-title .bx,
+.canvas-container p .bx {
+  font-size: 1.35em;
+  line-height: 1;
+  flex: none;
+}
+
+/* ---------- Buttons ---------- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--ui-font);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+}
+
+.ui-btn:hover {
+  background: #ffffff;
+}
+
+.ui-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.ui-btn:focus-visible,
+.water-btn:focus-visible,
+.touch-button:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.ui-btn-fire {
+  color: #fff;
+  background: var(--fire-500);
+}
+.ui-btn-fire:hover { background: var(--fire-600); }
+
+.ui-btn-water {
+  color: #fff;
+  background: var(--water-500);
+}
+.ui-btn-water:hover { background: var(--water-600); }
+
+/* Clear / Next sit on either side of the drawing canvas */
+.button-wrapper,
+.button-wrapper-2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* ---------- Player labels ---------- */
+#player1-Text,
+#player2-Text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--ui-font);
+  font-weight: 600;
+}
+#player1-Text .bx { color: var(--fire-600); }
+#player2-Text .bx { color: var(--water-600); }
+
+/* ---------- Water character select ---------- */
+.water-select-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  margin: 1.5rem auto;
+  padding: 1rem 1.25rem 1.25rem;
+  font-family: var(--ui-font);
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 5px 0 var(--ink);
+}
+
+.water-select-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+}
+.water-select-title .bx { color: var(--water-600); }
+
+.water-select-buttons {
+  display: flex;
+  gap: 0.5rem;
+  padding: 4px;
+  background: rgba(43, 29, 20, 0.08);
+  border-radius: 14px;
+}
+
+.water-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 120px;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-family: var(--ui-font);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.water-btn:hover {
+  background: rgba(47, 155, 255, 0.15);
+}
+
+.water-btn.active {
+  color: #fff;
+  background: var(--water-500);
+  border-color: var(--water-700);
+}
+
+/* ---------- Touch controls ---------- */
+.touch-pad {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.touch-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  font-size: 2rem;
+  color: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.touch-button .bx {
+  font-size: 2.1rem;
+  line-height: 1;
+  pointer-events: none; /* taps always hit the button, not the icon */
+}
+
+.touch-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.touch-pad-fire .touch-button  { background: var(--fire-500); }
+.touch-pad-fire .touch-button:active  { background: var(--fire-700); }
+.touch-pad-water .touch-button { background: var(--water-500); }
+.touch-pad-water .touch-button:active { background: var(--water-700); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 600px) {
+  .button-wrapper { gap: 0.5rem; }
+  .ui-btn { padding: 0.5rem 0.8rem; font-size: 0.95rem; }
+  .water-btn { min-width: 100px; }
+  .touch-button { width: 58px; height: 58px; }
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn,
+  .water-btn,
+  .touch-button {
+    transition: none;
+  }
+}

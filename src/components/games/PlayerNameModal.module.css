@@ -1,0 +1,195 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 9, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalCard {
+  background: linear-gradient(145deg, #1e1916 0%, #120f0d 100%);
+  border: 1px solid rgba(255, 107, 26, 0.35);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 107, 26, 0.15);
+  position: relative;
+  text-align: center;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 107, 26, 0.25) 0%, rgba(255, 107, 26, 0.05) 100%);
+  border: 1.5px solid var(--cv-orange, #ff6b1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 2rem;
+  color: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 4px 16px rgba(255, 107, 26, 0.3);
+}
+
+.title {
+  font-family: var(--cv-font-display, "Anton", sans-serif);
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cv-bone, #f5efe6);
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 0.88rem;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.7));
+  margin: 0 0 20px;
+  line-height: 1.45;
+}
+
+/* Greeting state for returning players */
+.greetingBox {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 107, 26, 0.2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.playerNameDisplay {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--cv-orange, #ff6b1a);
+  margin-top: 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cv-bone, #f5efe6);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #14110f;
+  border: 1.5px solid rgba(245, 239, 230, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: var(--cv-bone, #f5efe6);
+  font-family: var(--cv-font-body, "Plus Jakarta Sans", sans-serif);
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.2);
+}
+
+.input::placeholder {
+  color: rgba(245, 239, 230, 0.35);
+}
+
+.charCount {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  color: rgba(245, 239, 230, 0.4);
+  font-weight: 600;
+}
+
+.errorText {
+  color: #f87171;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.primaryBtn {
+  background: linear-gradient(135deg, #ff7828 0%, #e05609 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 107, 26, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  width: 100%;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 26, 0.45);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+}
+
+.changeNameBtn {
+  background: transparent;
+  border: none;
+  color: var(--cv-text-dim, rgba(245, 239, 230, 0.6));
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+}
+
+.changeNameBtn:hover {
+  color: var(--cv-orange, #ff6b1a);
+  text-decoration: underline;
+}

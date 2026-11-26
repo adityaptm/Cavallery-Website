@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import PlayerNameModal, { STORAGE_KEY_NAME, getOrCreateDeviceId } from "@/components/games/PlayerNameModal";
+import GameResultModal from "@/components/games/GameResultModal";
 
 interface GameFrameProps {
   src: string;
@@ -9,10 +12,48 @@ interface GameFrameProps {
   showMusicToggle?: boolean;
 }
 
-export default function GameFrame({ src, title, slug, showMusicToggle }: GameFrameProps) {
+export default function GameFrame({ src, title, slug = "anterine-ke-theater", showMusicToggle }: GameFrameProps) {
+  const router = useRouter();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
   const [musicOn, setMusicOn] = useState(true);
+  const [playerName, setPlayerName] = useState<string>("");
+  const [deviceId, setDeviceId] = useState<string>("");
+  const [hasStarted, setHasStarted] = useState<boolean>(false);
+  const [startTime, setStartTime] = useState<number>(0);
+
+  // Result Modal State
+  const [gameOverResult, setGameOverResult] = useState<{
+    score: number;
+    duration: number;
+  } | null>(null);
+
+  // Cek apakah game ini merupakan game ranked yang butuh nama sebelum main
+  const isRankedGame = slug === "anterine-ke-theater" || slug === "grasshopper-collector" || slug === "jumping-adventure";
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const devId = getOrCreateDeviceId();
+      setDeviceId(devId);
+      const savedName = localStorage.getItem(STORAGE_KEY_NAME) || "";
+      if (savedName) {
+        setPlayerName(savedName);
+      }
+      // Jika bukan game ranked, langsung start
+      if (!isRankedGame) {
+        setHasStarted(true);
+        setStartTime(Date.now());
+      }
+    }
+  }, [isRankedGame]);
+
+  const handleNameConfirm = (name: string, devId: string) => {
+    setPlayerName(name);
+    setDeviceId(devId);
+    setHasStarted(true);
+    setStartTime(Date.now());
+  };
 
   const getAvailableHeight = () => {
     if (wrapperRef.current) {
@@ -39,90 +80,167 @@ export default function GameFrame({ src, title, slug, showMusicToggle }: GameFra
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
       if (!event.data) return;
-      const { type, score, playerName, username, gameId } = event.data;
+      const { type, score } = event.data;
 
       if (type === "GAME_OVER" || type === "GAME_SCORE_SUBMIT" || type === "SUBMIT_SCORE") {
-        const finalName = playerName || username || "Pemain";
-        const finalScore = Number(score);
-        const targetSlug = slug || gameId || "grasshopper-collector";
+        const finalScore = Number(score) || 0;
+        const durationSec = Math.max(1, Math.round((Date.now() - (startTime || Date.now())) / 1000));
 
-        if (!isNaN(finalScore)) {
-          try {
-            await fetch(`/api/games/${targetSlug}/leaderboard`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username: finalName, score: finalScore }),
-            });
-          } catch (err) {
-            console.error("Gagal simpan skor via GameFrame:", err);
-          }
-        }
+        setGameOverResult({
+          score: finalScore,
+          duration: durationSec,
+        });
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [slug]);
+  }, [slug, startTime]);
+
+  const handlePlayAgain = () => {
+    setGameOverResult(null);
+    setStartTime(Date.now());
+    // Reload iframe to restart game
+    if (iframeRef.current) {
+      iframeRef.current.src = src;
+    }
+  };
+
+  const handleViewLeaderboard = () => {
+    router.push(`/games?tab=${slug}#leaderboard`);
+  };
 
   return (
-    <div ref={wrapperRef} style={{ position: "relative", width: "100%", height: "100%", minHeight: "600px" }}>
-      {showMusicToggle && (
-        <button
-          onClick={toggleMusic}
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%", height: "100%", minHeight: "600px", background: "#0c0a09" }}>
+      {/* 1. Modal Input Nama (Wajib sebelum game dimulai untuk Ranked Games) */}
+      {!hasStarted && isRankedGame && (
+        <PlayerNameModal
+          gameTitle={title}
+          onConfirm={handleNameConfirm}
+        />
+      )}
+
+      {/* 2. Top Controls Bar (Player Name Pill & Music Toggle) */}
+      {hasStarted && (
+        <div
           style={{
             position: "absolute",
             top: "12px",
             right: "12px",
             zIndex: 100,
-            background: "rgba(0,0,0,0.6)",
-            border: "1px solid rgba(255,255,255,0.3)",
-            color: "white",
-            borderRadius: "8px",
-            padding: "8px 14px",
-            cursor: "pointer",
-            fontSize: "13px",
-            backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
-            gap: "6px",
+            gap: "8px",
           }}
         >
-          <i className={`bx ${musicOn ? "bx-volume-full" : "bx-volume-mute"}`} style={{ fontSize: "16px" }} />
-          {musicOn ? "Music On" : "Music Off"}
-        </button>
+          {playerName && isRankedGame && (
+            <div
+              style={{
+                background: "rgba(18, 15, 13, 0.85)",
+                border: "1px solid rgba(255, 107, 26, 0.4)",
+                color: "#f5efe6",
+                borderRadius: "8px",
+                padding: "8px 14px",
+                fontSize: "13px",
+                fontWeight: 700,
+                backdropFilter: "blur(8px)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <i className="bx bxs-user-circle" style={{ color: "var(--cv-orange, #ff6b1a)", fontSize: "16px" }} />
+              <span>{playerName}</span>
+            </div>
+          )}
+
+          {showMusicToggle && (
+            <button
+              onClick={toggleMusic}
+              style={{
+                background: "rgba(18, 15, 13, 0.85)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                color: "white",
+                borderRadius: "8px",
+                padding: "8px 14px",
+                cursor: "pointer",
+                fontSize: "13px",
+                backdropFilter: "blur(8px)",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <i className={`bx ${musicOn ? "bx-volume-full" : "bx-volume-mute"}`} style={{ fontSize: "16px" }} />
+              {musicOn ? "Music On" : "Music Off"}
+            </button>
+          )}
+        </div>
       )}
 
-      <iframe
-        ref={iframeRef}
-        src={src}
-        title={title}
-        allowFullScreen
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads"
-        style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-        onLoad={(e) => {
-          const iframe = e.currentTarget;
-          const resize = () => {
-            try {
-              const body = iframe.contentWindow?.document.body;
-              const html = iframe.contentWindow?.document.documentElement;
-              if (body && html) {
-                const contentHeight = Math.max(
-                  body.scrollHeight,
-                  body.offsetHeight,
-                  html.scrollHeight,
-                  html.offsetHeight
-                );
-                const available = getAvailableHeight();
-                iframe.style.height = Math.max(contentHeight, available) + "px";
-              }
-            } catch {}
-          };
-          setTimeout(resize, 300);
-          setTimeout(resize, 800);
-          setTimeout(resize, 1500);
-          setTimeout(resize, 3000);
-        }}
-      />
+      {/* 3. Game Iframe (Hanya dimuat jika sudah start) */}
+      {hasStarted ? (
+        <iframe
+          ref={iframeRef}
+          src={src}
+          title={title}
+          allowFullScreen
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
+          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          onLoad={(e) => {
+            const iframe = e.currentTarget;
+            const resize = () => {
+              try {
+                const body = iframe.contentWindow?.document.body;
+                const html = iframe.contentWindow?.document.documentElement;
+                if (body && html) {
+                  const contentHeight = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                  );
+                  const available = getAvailableHeight();
+                  iframe.style.height = Math.max(contentHeight, available) + "px";
+                }
+              } catch {}
+            };
+            setTimeout(resize, 300);
+            setTimeout(resize, 800);
+            setTimeout(resize, 1500);
+            setTimeout(resize, 3000);
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "var(--cv-text-dim, rgba(245, 239, 230, 0.6))",
+            fontSize: "1rem",
+            flexDirection: "column",
+            gap: "12px",
+          }}
+        >
+          <i className="bx bx-joystick" style={{ fontSize: "3rem", color: "var(--cv-orange, #ff6b1a)" }} />
+          <span>Silakan masukkan nama untuk memulai permainan...</span>
+        </div>
+      )}
+
+      {/* 4. Modal Hasil Game Over / Menang */}
+      {gameOverResult && (
+        <GameResultModal
+          score={gameOverResult.score}
+          gameSlug={slug}
+          playerName={playerName || "Pemain"}
+          deviceId={deviceId || "dev-player"}
+          durationSeconds={gameOverResult.duration}
+          onPlayAgain={handlePlayAgain}
+          onViewLeaderboard={handleViewLeaderboard}
+        />
+      )}
     </div>
   );
 }
