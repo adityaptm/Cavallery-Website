@@ -77,8 +77,8 @@ export default function LiveBanner() {
       {/* ── 1. TOP MAIN MEMBER CARD ── */}
       <div className={styles.topCard}>
         <img
-          src="https://cdn.idn.media/idnaccount/avatar/500/d1cdcab90bc683da3f2e421af73c52b7.webp"
-          alt="Catherina Vallencia IDN Live"
+          src="/api/jkt48/member-photo/catherina_vallencia"
+          alt="Catherina Vallencia Team Passion JKT48"
           className={styles.memberPortrait}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src =

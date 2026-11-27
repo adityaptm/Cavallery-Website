@@ -55,12 +55,18 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
   const cleanTime = (show.startTime || "19:00").slice(0, 5);
 
   const members = show.members || [];
+  const ERINE_PASSION_PHOTO = "/api/jkt48/member-photo/catherina_vallencia";
   const erineMember = members.find((m) => m.is_erine) || {
     id: "44",
     name: "Catherina Vallencia (Erine)",
-    avatar: "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg",
+    avatar: ERINE_PASSION_PHOTO,
     is_erine: true,
   };
+  const erinePhotoUrl =
+    erineMember.avatar &&
+    erineMember.avatar.includes("jkt48-member/catherina_vallencia")
+      ? erineMember.avatar
+      : ERINE_PASSION_PHOTO;
   const otherMembers = members.filter((m) => !m.is_erine);
   const displayOthers = otherMembers.slice(0, 4);
   const remainingCount = Math.max(0, otherMembers.length - 4);
@@ -153,13 +159,12 @@ export default function SpotlightCard({ show, onClick }: SpotlightCardProps) {
             {/* Erine Highlight Pill */}
             <div className={styles.erinePill} title="Catherina Vallencia (Erine)">
               <img
-                src={erineMember.avatar || "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg"}
-                alt="Erine"
+                src={erinePhotoUrl}
+                alt="Erine - Team Passion JKT48"
                 className={styles.erineAvatar}
-                referrerPolicy="no-referrer"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src =
-                    "https://cava.jkt48connect.com/IMG-20260525-WA0211.jpg";
+                    "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
                 }}
               />
               <span>ERINE</span>

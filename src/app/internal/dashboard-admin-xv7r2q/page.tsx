@@ -6,6 +6,7 @@ import type { BotMediaItem } from "@/app/api/bot-media/route";
 import LineChatManager from "@/components/admin/LineChatManager";
 import AdminPassionBackground from "@/components/admin/AdminPassionBackground";
 import RecruitmentAdminManager from "@/components/admin/RecruitmentAdminManager";
+import RoleApplicationsManager from "@/components/admin/RoleApplicationsManager";
 
 const api = (path: string) => (path.startsWith("/api") ? path : `/api${path}`);
 
@@ -20,7 +21,7 @@ const mediaApi = (path: string) => {
 const DISCORD_API = "/api/discord";
 
 type Section =
-  | "dashboard" | "recruitment" | "esport"    | "news"     | "timeline" | "gallery"
+  | "dashboard" | "recruitment" | "roleapplications" | "esport"    | "news"     | "timeline" | "gallery"
   | "setlists"  | "stats"       | "youtube"  | "funfacts"
   | "kabesha"   | "media"       | "discord"  | "journal"
   | "bot"       | "botmedia"    | "linechat"   | "tickets"  | "calendar" | "updates" 
@@ -11025,10 +11026,11 @@ const navGroups: NavGroup[] = [
     label: "Utama",
     icon: "bx-grid-alt",
     items: [
-      { key: "dashboard",   icon: "bx-home-alt",     label: "Dashboard"   },
-      { key: "recruitment", icon: "bx-group",        label: "Recruitment" },
-      { key: "invitations", icon: "bx-envelope",     label: "Undangan"    },
-      { key: "anggotakota", icon: "bx-map",          label: "Anggota Kota"},
+      { key: "dashboard",        icon: "bx-home-alt",     label: "Dashboard"   },
+      { key: "recruitment",      icon: "bx-group",        label: "Recruitment" },
+      { key: "roleapplications", icon: "bx-user-voice",   label: "Daftar Admin & Volunteer" },
+      { key: "invitations",      icon: "bx-envelope",     label: "Undangan"    },
+      { key: "anggotakota",      icon: "bx-map",          label: "Anggota Kota"},
     ],
   },
   {
@@ -11306,6 +11308,7 @@ export default function AdminPage() {
           <div className={styles.content}>
             {active === "dashboard"   ? <DashboardHome onNav={navigate} />
             : active === "recruitment"? <RecruitmentManager />
+            : active === "roleapplications" ? <AdminErrorBoundary moduleName="Pendaftaran Admin & Volunteer"><RoleApplicationsManager /></AdminErrorBoundary>
             : active === "esport"     ? <EsportManager />
             : active === "invitations"? <InvitationsManager />
             : active === "media"      ? <MediaManager />

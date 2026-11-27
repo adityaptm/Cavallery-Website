@@ -136,7 +136,7 @@ export default function PlayerNameModal({
                   type="text"
                   maxLength={20}
                   className={styles.input}
-                  placeholder="Contoh: ErineFans_99"
+                  placeholder="Masukkan nama kamu"
                   value={nameInput}
                   onChange={(e) => {
                     setNameInput(e.target.value);

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import * as htmlToImage from "html-to-image";
 import styles from "./page.module.css";
 import { getMemberBadge } from "@/lib/badges";
+import RoleApplicationPanel from "@/components/kas/RoleApplicationPanel";
 
 const PLATFORMS = ["LINE", "X (Twitter)", "Instagram", "TikTok", "Discord"];
 
@@ -163,7 +164,7 @@ export default function CavalleryKasPage() {
   // Logged-in Dashboard State
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [portalTab, setPortalTab] = useState<
-    "bayar" | "riwayat" | "kupon" | "donasi" | "war"
+    "bayar" | "riwayat" | "kupon" | "donasi" | "war" | "daftar"
   >("bayar");
   const [periodeBulan, setPeriodeBulan] = useState<number>(
     new Date().getMonth() + 1,
@@ -3038,6 +3039,16 @@ export default function CavalleryKasPage() {
               <i className="bx bx-flame" />
               <span>War Tiket</span>
             </button>
+            {sessionUser?.type === "anggota" && (
+              <button
+                type="button"
+                className={`${styles.navPillBtn} ${portalTab === "daftar" ? styles.navPillBtnActive : ""}`}
+                onClick={() => setPortalTab("daftar")}
+              >
+                <i className="bx bx-user-plus" />
+                <span>Daftar Tim</span>
+              </button>
+            )}
           </div>
 
           <button
@@ -3109,6 +3120,7 @@ export default function CavalleryKasPage() {
             </div>
           </div>
         )}
+
 
         {/* ── 2. KARTU STATUS KEANGGOTAAN & PROGRESS BAR 12 BULAN (HANYA UNTUK ANGGOTA BIASA) ── */}
         {(portalTab === "bayar" || portalTab === "riwayat") && sessionUser?.type === "anggota" && sessionUser?.jabatan !== "Admin Fanbase" && !sessionUser?.jabatan?.toLowerCase().includes("admin") && (() => {
@@ -3304,6 +3316,7 @@ export default function CavalleryKasPage() {
             </div>
           </div>
         )}
+
 
         {/* ── TAB 1: BAYAR KAS (ATAU STATUS BEBAS KAS UNTUK ADMIN FANBASE) ── */}
         {portalTab === "bayar" &&
@@ -5597,6 +5610,12 @@ export default function CavalleryKasPage() {
               )}
             </div>
           </div>
+        )}
+
+
+        {/* ── TAB 5: DAFTAR ADMIN & VOLUNTEER (KHUSUS ANGGOTA) ── */}
+        {portalTab === "daftar" && sessionUser?.type === "anggota" && (
+          <RoleApplicationPanel sessionUser={sessionUser} styles={styles} />
         )}
 
         {/* ══════════════════════════════════════════════════════════════════ */}

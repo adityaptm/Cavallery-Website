@@ -84,7 +84,7 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
     id: "44",
     name: "Catherina Vallencia",
     url_key: "erine",
-    avatar: "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg",
+    avatar: "/api/jkt48/member-photo/catherina_vallencia",
     is_erine: true,
   };
   const otherMembers = members.filter((m) => !m.is_erine);
@@ -93,19 +93,22 @@ export default function ShowModal({ show, onClose }: ShowModalProps) {
   const getMemberPhoto = (m: any): string => {
     if (typeof m === "string") {
       const slug = m.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-      return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+      return `/api/jkt48/member-photo/${slug}`;
+    }
+    if (m?.is_erine || (m?.name || "").toLowerCase().includes("catherina") || (m?.name || "").toLowerCase().includes("erine")) {
+      return "/api/jkt48/member-photo/catherina_vallencia";
     }
     if (m?.avatar && !m.avatar.includes("cava-logo") && !m.avatar.includes("undefined")) return m.avatar;
     if (m?.img && !m.img.includes("cava-logo") && !m.img.includes("undefined")) return m.img;
     const name = (m?.name || "").trim().toLowerCase();
     if (name) {
       const slug = name.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-      return `https://jkt48.com/api/v1/storages/media/jkt48-member/${slug}.jpg`;
+      return `/api/jkt48/member-photo/${slug}`;
     }
     if (m?.url_key) {
-      return `https://jkt48.com/api/v1/storages/media/jkt48-member/${m.url_key.toLowerCase()}.jpg`;
+      return `/api/jkt48/member-photo/${m.url_key.toLowerCase()}`;
     }
-    return "https://jkt48.com/api/v1/storages/media/jkt48-member/catherina_vallencia.jpg";
+    return "/api/jkt48/member-photo/catherina_vallencia";
   };
 
   const handleCopyLink = () => {

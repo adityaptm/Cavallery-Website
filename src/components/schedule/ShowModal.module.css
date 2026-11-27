@@ -32,7 +32,7 @@
   max-width: 840px;
   margin: 0 auto;
   box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.85),
-              0 0 40px rgba(220, 38, 38, 0.25);
+              0 0 40px rgba(255, 107, 26, 0.25);
   animation: slideUp 0.25s var(--cv-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
   color: #1c140e;
 }
@@ -62,7 +62,7 @@
 }
 
 .closeBtn:hover {
-  background: #dc2626;
+  background: var(--cv-orange, #ff6b1a);
   transform: rotate(90deg);
 }
 
@@ -166,7 +166,7 @@
 }
 
 .infoCardLabel i {
-  color: #dc2626;
+  color: var(--cv-orange, #ff6b1a);
   font-size: 0.85rem;
 }
 
@@ -179,14 +179,14 @@
 
 /* Erine Spotlight Highlight Box (Like Reference) */
 .erineSpotlightBox {
-  background: #fff5f5;
-  border: 1.5px solid #f87171;
+  background: #fff7f2;
+  border: 1.5px solid rgba(255, 107, 26, 0.5);
   border-radius: 16px;
   padding: 18px 24px;
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.08);
+  box-shadow: 0 4px 14px rgba(255, 107, 26, 0.08);
 }
 
 .erineAvatarWrapper {
@@ -199,14 +199,14 @@
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ef4444;
+  border: 2px solid var(--cv-orange, #ff6b1a);
 }
 
 .erineStarBadge {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  background: #ef4444;
+  background: var(--cv-orange, #ff6b1a);
   color: #ffffff;
   width: 18px;
   height: 18px;
@@ -215,7 +215,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff5f5;
+  border: 2px solid #fff7f2;
 }
 
 .erineInfoCol {
@@ -229,7 +229,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #dc2626;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .erineBigName {
@@ -268,12 +268,12 @@
 }
 
 .lineupHeading i {
-  color: #dc2626;
+  color: var(--cv-orange, #ff6b1a);
   font-size: 1.1rem;
 }
 
 .countPillRed {
-  background: #dc2626;
+  background: var(--cv-orange, #ff6b1a);
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 800;
@@ -370,7 +370,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #dc2626;
+  background: var(--cv-orange, #ff6b1a);
   color: #ffffff;
   font-family: var(--cv-font-body, sans-serif);
   font-size: 0.88rem;
@@ -380,14 +380,14 @@
   padding: 14px 20px;
   border-radius: 12px;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  box-shadow: 0 4px 14px rgba(255, 107, 26, 0.35);
   transition: background 0.2s, transform 0.2s;
   border: none;
   cursor: pointer;
 }
 
 .btnRedAction:hover {
-  background: #b91c1c;
+  background: #e4570d;
   transform: translateY(-2px);
 }
 
@@ -412,7 +412,7 @@
 
 .btnWhiteAction:hover {
   background: #f5efe6;
-  border-color: #dc2626;
+  border-color: var(--cv-orange, #ff6b1a);
 }
 
 /* Top Gifters Grid */
@@ -435,7 +435,7 @@
 .gifterRank {
   font-size: 0.75rem;
   font-weight: 800;
-  color: #dc2626;
+  color: var(--cv-orange, #ff6b1a);
   width: 24px;
 }
 
@@ -499,7 +499,7 @@
 .stagelistNum {
   font-size: 0.7rem;
   font-weight: 800;
-  color: #dc2626;
+  color: var(--cv-orange, #ff6b1a);
   width: 20px;
   text-align: right;
 }

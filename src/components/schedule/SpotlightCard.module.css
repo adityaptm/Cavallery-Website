@@ -165,12 +165,12 @@
 }
 
 .statusLive {
-  color: #ef4444;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 .statusLive .statusDot {
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 0 8px var(--cv-orange, #ff6b1a);
   animation: pulseLive 1.4s infinite;
 }
 

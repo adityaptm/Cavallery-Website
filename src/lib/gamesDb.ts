@@ -197,19 +197,33 @@ export async function savePlayerScore(sub: ScoreSubmission): Promise<{ success: 
 }
 
 /**
- * Get Leaderboard (Top N unique players)
+ * Get Leaderboard (Top N unique players, combining game_scores & legacy game_sessions)
  */
 export async function getGameLeaderboard(game_slug: string, limit = 10): Promise<LeaderboardEntry[]> {
-  // 1. MySQL View / Query
+  // 1. MySQL: Gabungkan tabel baru (game_scores) + tabel lama (game_sessions & players)
   if (isMySqlConfigured()) {
     try {
       const rows = await query<any[]>(
-        `SELECT id, game_slug, player_name, device_id, score, duration_seconds, created_at 
-         FROM v_best_scores 
-         WHERE game_slug = ? 
-         ORDER BY score DESC, created_at ASC 
+        `SELECT 
+           MIN(player_name) AS player_name,
+           MAX(device_id) AS device_id,
+           MAX(score) AS score,
+           MIN(duration_seconds) AS duration_seconds,
+           MIN(created_at) AS created_at
+         FROM (
+           SELECT player_name, device_id, score, duration_seconds, created_at
+           FROM game_scores
+           WHERE game_slug = ?
+           UNION ALL
+           SELECT COALESCE(p.username, 'Pemain') AS player_name, gs.player_id AS device_id, gs.score, gs.duration_seconds, gs.played_at AS created_at
+           FROM game_sessions gs
+           LEFT JOIN players p ON gs.player_id = p.id
+           WHERE gs.game_id = ?
+         ) AS combined
+         GROUP BY LOWER(player_name)
+         ORDER BY score DESC, created_at ASC
          LIMIT ?`,
-        [game_slug, limit]
+        [game_slug, game_slug, limit]
       );
 
       if (rows && Array.isArray(rows)) {
@@ -223,7 +237,29 @@ export async function getGameLeaderboard(game_slug: string, limit = 10): Promise
         }));
       }
     } catch (err) {
-      console.warn("[MySQL] getGameLeaderboard error, using fallback:", err);
+      console.warn("[MySQL] Combined getGameLeaderboard error, trying v_best_scores:", err);
+      try {
+        const rows = await query<any[]>(
+          `SELECT id, game_slug, player_name, device_id, score, duration_seconds, created_at 
+           FROM v_best_scores 
+           WHERE game_slug = ? 
+           ORDER BY score DESC, created_at ASC 
+           LIMIT ?`,
+          [game_slug, limit]
+        );
+        if (rows && Array.isArray(rows)) {
+          return rows.map((r, idx) => ({
+            rank: idx + 1,
+            player_name: r.player_name || "Pemain",
+            device_id: r.device_id,
+            score: Number(r.score) || 0,
+            duration_seconds: Number(r.duration_seconds) || 0,
+            created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          }));
+        }
+      } catch (err2) {
+        console.warn("[MySQL] v_best_scores fallback error:", err2);
+      }
     }
   }
 
@@ -256,17 +292,29 @@ export async function getGameLeaderboard(game_slug: string, limit = 10): Promise
 }
 
 /**
- * Get Aggregated Game Statistics
+ * Get Aggregated Game Statistics (combining game_scores & legacy game_sessions)
  */
 export async function getGameStats(game_slug: string): Promise<GameStats> {
-  // 1. MySQL View / Query
+  // 1. MySQL: Gabungkan statistik dari game_scores + game_sessions
   if (isMySqlConfigured()) {
     try {
       const rows = await query<any[]>(
-        `SELECT rekor_teratas, total_pemain, sesi_dimainkan, rata_rata_skor 
-         FROM v_game_stats 
-         WHERE game_slug = ?`,
-        [game_slug]
+        `SELECT 
+           COALESCE(MAX(score), 0) AS rekor_teratas,
+           COUNT(DISTINCT LOWER(player_name)) AS total_pemain,
+           COUNT(*) AS sesi_dimainkan,
+           ROUND(COALESCE(AVG(score), 0), 1) AS rata_rata_skor
+         FROM (
+           SELECT player_name, score
+           FROM game_scores
+           WHERE game_slug = ?
+           UNION ALL
+           SELECT COALESCE(p.username, gs.player_id) AS player_name, gs.score
+           FROM game_sessions gs
+           LEFT JOIN players p ON gs.player_id = p.id
+           WHERE gs.game_id = ?
+         ) AS combined`,
+        [game_slug, game_slug]
       );
 
       if (rows && rows.length > 0) {
@@ -279,7 +327,26 @@ export async function getGameStats(game_slug: string): Promise<GameStats> {
         };
       }
     } catch (err) {
-      console.warn("[MySQL] getGameStats error, using fallback:", err);
+      console.warn("[MySQL] Combined getGameStats error, trying v_game_stats:", err);
+      try {
+        const rows = await query<any[]>(
+          `SELECT rekor_teratas, total_pemain, sesi_dimainkan, rata_rata_skor 
+           FROM v_game_stats 
+           WHERE game_slug = ?`,
+          [game_slug]
+        );
+        if (rows && rows.length > 0) {
+          const r = rows[0];
+          return {
+            rekor_teratas: Number(r.rekor_teratas) || 0,
+            total_pemain: Number(r.total_pemain) || 0,
+            sesi_dimainkan: Number(r.sesi_dimainkan) || 0,
+            rata_rata_skor: Number(r.rata_rata_skor) || 0,
+          };
+        }
+      } catch (err2) {
+        console.warn("[MySQL] v_game_stats fallback error:", err2);
+      }
     }
   }
 

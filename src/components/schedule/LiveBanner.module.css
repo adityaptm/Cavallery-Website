@@ -117,8 +117,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background: var(--cv-orange, #ff6b1a);
+  box-shadow: 0 0 8px var(--cv-orange, #ff6b1a);
   animation: pulseLive 1.4s infinite;
 }
 
@@ -238,7 +238,7 @@
 }
 
 .platformLogoBadge {
-  background: #dc2626;
+  background: var(--cv-orange, #ff6b1a);
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 900;
@@ -287,14 +287,14 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(220, 38, 38, 0.2);
+  background: rgba(255, 107, 26, 0.2);
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #ef4444;
+  color: var(--cv-orange, #ff6b1a);
 }
 
 /* Soundwave Card Body */

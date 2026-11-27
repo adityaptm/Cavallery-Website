@@ -29,8 +29,9 @@ export default function GameFrame({ src, title, slug = "anterine-ke-theater", sh
     duration: number;
   } | null>(null);
 
-  // Cek apakah game ini merupakan game ranked yang butuh nama sebelum main
-  const isRankedGame = slug === "anterine-ke-theater" || slug === "grasshopper-collector" || slug === "jumping-adventure";
+  // Hanya game Anterine Ke Theater yang butuh modal input nama sebelum main
+  // (Game Belalang & Bibir sudah memiliki input nama di dalam gamenya sendiri)
+  const needsPreGameModal = slug === "anterine-ke-theater";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -40,13 +41,13 @@ export default function GameFrame({ src, title, slug = "anterine-ke-theater", sh
       if (savedName) {
         setPlayerName(savedName);
       }
-      // Jika bukan game ranked, langsung start
-      if (!isRankedGame) {
+      // Jika tidak butuh modal nama sebelum main, langsung start
+      if (!needsPreGameModal) {
         setHasStarted(true);
         setStartTime(Date.now());
       }
     }
-  }, [isRankedGame]);
+  }, [needsPreGameModal]);
 
   const handleNameConfirm = (name: string, devId: string) => {
     setPlayerName(name);
@@ -112,8 +113,8 @@ export default function GameFrame({ src, title, slug = "anterine-ke-theater", sh
 
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%", height: "100%", minHeight: "600px", background: "#0c0a09" }}>
-      {/* 1. Modal Input Nama (Wajib sebelum game dimulai untuk Ranked Games) */}
-      {!hasStarted && isRankedGame && (
+      {/* 1. Modal Input Nama (Hanya untuk Anterine Ke Theater) */}
+      {!hasStarted && needsPreGameModal && (
         <PlayerNameModal
           gameTitle={title}
           onConfirm={handleNameConfirm}
@@ -133,7 +134,7 @@ export default function GameFrame({ src, title, slug = "anterine-ke-theater", sh
             gap: "8px",
           }}
         >
-          {playerName && isRankedGame && (
+          {playerName && needsPreGameModal && (
             <div
               style={{
                 background: "rgba(18, 15, 13, 0.85)",
